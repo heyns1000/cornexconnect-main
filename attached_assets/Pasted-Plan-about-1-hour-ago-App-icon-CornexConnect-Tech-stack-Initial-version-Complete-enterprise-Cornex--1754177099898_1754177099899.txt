@@ -1,0 +1,52 @@
+Plan
+about 1 hour ago
+
+App icon
+CornexConnect
+Tech stack
+Initial version
+Complete enterprise Cornex platform integrating all uploaded assets, product catalogs, AI features, and global business management capabilities
+Complete Cornex product catalog with all EPS (EPS01-EPS18) and BR (BR1-BR13) products
+All pack configurations, MOQ requirements, and specifications from uploaded catalogs
+Integration of all uploaded HTML assets and branding
+AI-powered demand forecasting with SKU-level machine learning
+Automated factory production scheduling with MRP integration
+Global distributor portal with multi-currency support (190+ currencies)
+Advanced inventory optimization with predictive analytics
+Real-time business intelligence dashboards
+Role-based access control for all user types
+Complete integration of HomeM art and Cornice Maker data under Cornex brand
+All sub-brands (TrimStyle™, DesignAura™, CorniceCraft™, CeilingTech™)
+Provincial sales tracking and factory management
+Licensing tier management system
+Later
+Agent can work on these tasks after the initial version
+Machine learning model optimization for 99%+ accuracy
+Blockchain supply chain integration
+IoT sensor integration for real-time tracking
+ESG reporting and carbon footprint optimizationitial version
+A global-standard Cornex business management platform with comprehensive product catalog, advanced pricing templates, and enterprise-grade analytics
+Centralized Cornex product catalog management
+Complete EPS and BR cornice product lines with specifications
+Advanced SKU management system (EPS01-EPS18, BR1-BR13, etc.)
+Dynamic pricing template engine with real business logic
+Pack size and box configuration management
+MOQ (Minimum Order Quantity) tracking and enforcement
+Top seller identification and analytics
+Multi-brand portfolio under Cornex umbrella
+Provincial distribution and inventory tracking
+Factory production planning and capacity management
+Global-standard business intelligence dashboard
+Role-based access (owners, hardware distributors, factory operators)
+Initial version
+A global-level business management platform for Cornex brand with integrated legacy data, multi-brand portfolio management, and enterprise analytics
+Comprehensive product catalog management system
+Client data migration and integration from HomeM art/Cornice Maker
+Advanced inventory tracking and management
+Multi-brand portfolio display (TrimStyle™, DesignAura™, CorniceCraft™, CeilingTech™)
+Provincial sales tracking and analytics
+Factory setup and ownership management
+Licensing tier management system
+AI-powered business intelligence dashboard
+Contact and lead management system
+User authentication for different access levels (owners, hardware, distributors)
