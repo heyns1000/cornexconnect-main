@@ -450,6 +450,135 @@ async function initializeSampleData() {
       await storage.createDistributor(distributor);
     }
 
+    // Create sample orders
+    const allProducts = await storage.getProducts();
+    const allDistributors = await storage.getDistributors();
+    
+    const sampleOrders = [
+      {
+        orderNumber: "ORD-2024-001",
+        distributorId: allDistributors[0].id,
+        status: "delivered",
+        totalAmount: "125600.00",
+        currency: "ZAR",
+        exchangeRate: "1.000000",
+        paymentStatus: "paid",
+        expectedDelivery: new Date("2024-01-15"),
+        notes: "Bulk order for Q1 inventory"
+      },
+      {
+        orderNumber: "ORD-2024-002", 
+        distributorId: allDistributors[1].id,
+        status: "shipped",
+        totalAmount: "89400.00",
+        currency: "ZAR",
+        exchangeRate: "1.000000",
+        paymentStatus: "paid",
+        expectedDelivery: new Date("2024-01-20"),
+        notes: "Premium range order"
+      },
+      {
+        orderNumber: "ORD-2024-003",
+        distributorId: allDistributors[2].id,
+        status: "production",
+        totalAmount: "156800.00",
+        currency: "ZAR", 
+        exchangeRate: "1.000000",
+        paymentStatus: "pending",
+        expectedDelivery: new Date("2024-02-05"),
+        notes: "Custom LED ready products"
+      }
+    ];
+
+    for (const order of sampleOrders) {
+      await storage.createOrder(order);
+    }
+
+    // Create sample sales metrics for each region
+    const regions = ["Gauteng", "Western Cape", "KwaZulu-Natal", "Eastern Cape", "Limpopo", "Mpumalanga", "North West", "Free State", "Northern Cape"];
+    
+    for (let i = 0; i < 12; i++) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      
+      for (const region of regions) {
+        // Regional performance varies
+        const baseRevenue = region === "Gauteng" ? 850000 : 
+                           region === "Western Cape" ? 720000 :
+                           region === "KwaZulu-Natal" ? 680000 : 450000;
+        
+        const monthlyVariation = (Math.random() - 0.5) * 0.3;
+        const revenue = baseRevenue * (1 + monthlyVariation);
+        const units = Math.floor(revenue / 12.5); // Average unit price
+        
+        await storage.createSalesMetrics({
+          date,
+          region,
+          productId: allProducts[Math.floor(Math.random() * allProducts.length)].id,
+          distributorId: allDistributors[Math.floor(Math.random() * allDistributors.length)].id,
+          revenue: revenue.toFixed(2),
+          units,
+          currency: "ZAR",
+          metricType: "monthly"
+        });
+      }
+    }
+
+    // Create production schedules
+    const productionLines = ["EPS Line A", "BR XPS Line B", "LED Ready Line", "Custom Line"];
+    
+    for (let i = 0; i < 30; i++) {
+      const scheduleDate = new Date();
+      scheduleDate.setDate(scheduleDate.getDate() + i);
+      
+      const randomProduct = allProducts[Math.floor(Math.random() * allProducts.length)];
+      const randomLine = productionLines[Math.floor(Math.random() * productionLines.length)];
+      
+      const plannedQty = Math.floor(Math.random() * 5000) + 1000;
+      const actualQty = i < 10 ? Math.floor(plannedQty * (0.9 + Math.random() * 0.2)) : 0;
+      const efficiency = actualQty > 0 ? Math.min(100, (actualQty / plannedQty) * 100) : null;
+      
+      const statuses = ["scheduled", "in_progress", "completed"];
+      const status = i < 5 ? "in_progress" : i < 15 ? "completed" : "scheduled";
+      
+      await storage.createProductionSchedule({
+        productId: randomProduct.id,
+        scheduledDate: scheduleDate,
+        plannedQuantity: plannedQty,
+        actualQuantity: actualQty,
+        productionLine: randomLine,
+        status,
+        priority: Math.random() > 0.7 ? "high" : Math.random() > 0.4 ? "normal" : "low",
+        efficiency: efficiency ? efficiency.toFixed(1) : null,
+        notes: `Production batch for ${randomProduct.sku}`
+      });
+    }
+
+    // Create demand forecasts
+    for (const product of allProducts.slice(0, 20)) {
+      for (const region of regions.slice(0, 5)) {
+        for (let i = 0; i < 6; i++) {
+          const forecastDate = new Date();
+          forecastDate.setMonth(forecastDate.getMonth() + i);
+          
+          const baseDemand = Math.floor(Math.random() * 2000) + 500;
+          const seasonalFactor = 1 + (Math.sin((forecastDate.getMonth() / 12) * 2 * Math.PI) * 0.2);
+          const predictedDemand = Math.floor(baseDemand * seasonalFactor);
+          
+          await storage.createDemandForecast({
+            productId: product.id,
+            region,
+            forecastDate,
+            predictedDemand,
+            confidence: (85 + Math.random() * 15).toFixed(1),
+            seasonalFactor: seasonalFactor.toFixed(2),
+            marketTrend: Math.random() > 0.6 ? "up" : Math.random() > 0.3 ? "stable" : "down",
+            modelVersion: "v2.1.0"
+          });
+        }
+      }
+    }
+
     console.log("Sample data initialized successfully");
   } catch (error) {
     console.error("Failed to initialize sample data:", error);
