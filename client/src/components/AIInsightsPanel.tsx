@@ -108,7 +108,7 @@ export default function AIInsightsPanel() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-2">
             <Brain className="w-6 h-6 text-cornex-blue" />
-            <span>AI Intelligence Center</span>
+            <span>🍎 Fruitful Assist Intelligence Center</span>
           </CardTitle>
           <Badge variant="outline" className="bg-green-50 text-green-700">
             <Zap className="w-3 h-3 mr-1" />

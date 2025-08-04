@@ -52,23 +52,23 @@ export default function FactorySetup() {
   const queryClient = useQueryClient();
 
   // Fetch factory setups
-  const { data: factories = [], isLoading: factoriesLoading } = useQuery({
+  const { data: factories = [], isLoading: factoriesLoading } = useQuery<FactorySetup[]>({
     queryKey: ["/api/factory-setups"],
   });
 
   // Fetch AI insights
-  const { data: aiInsights = [], isLoading: insightsLoading } = useQuery({
+  const { data: aiInsights = [], isLoading: insightsLoading } = useQuery<AiInsight[]>({
     queryKey: ["/api/ai-insights"],
   });
 
   // Fetch production metrics for selected factory
-  const { data: productionMetrics = [], isLoading: metricsLoading } = useQuery({
+  const { data: productionMetrics = [], isLoading: metricsLoading } = useQuery<ProductionMetrics[]>({
     queryKey: ["/api/production-metrics", selectedFactory],
     enabled: !!selectedFactory,
   });
 
   // Fetch factory recommendations for selected factory
-  const { data: factoryRecommendations = [], isLoading: recommendationsLoading } = useQuery({
+  const { data: factoryRecommendations = [], isLoading: recommendationsLoading } = useQuery<FactoryRecommendation[]>({
     queryKey: ["/api/factory-recommendations", selectedFactory],
     enabled: !!selectedFactory,
   });
@@ -76,23 +76,20 @@ export default function FactorySetup() {
   // Create new factory setup
   const createFactoryMutation = useMutation({
     mutationFn: async (factoryData: any) => {
-      return await apiRequest("/api/factory-setups", {
-        method: "POST",
-        body: JSON.stringify({
-          factoryName: factoryData.name,
-          location: factoryData.location,
-          ownershipPhase: 'planning',
-          progressPercentage: 0,
-          totalInvestment: "0",
-          currentPayment: 0,
-          totalPayments: 1,
-          monthlyRevenue: "0",
-          productionCapacity: factoryData.initialCapacity,
-          aiOptimizationLevel: 0,
-          connectedStores: 0,
-          targetStores: factoryData.targetStores,
-          isActive: true
-        }),
+      return await apiRequest("/api/factory-setups", "POST", {
+        factoryName: factoryData.name,
+        location: factoryData.location,
+        ownershipPhase: 'planning',
+        progressPercentage: 0,
+        totalInvestment: "0",
+        currentPayment: 0,
+        totalPayments: 1,
+        monthlyRevenue: "0",
+        productionCapacity: factoryData.initialCapacity,
+        aiOptimizationLevel: 0,
+        connectedStores: 0,
+        targetStores: factoryData.targetStores,
+        isActive: true
       });
     },
     onSuccess: () => {
@@ -131,16 +128,16 @@ export default function FactorySetup() {
             <div>
               <h1 className="text-3xl font-bold mb-2 flex items-center">
                 <Factory className="w-8 h-8 mr-3" />
-                Cornex Factory Setup & Ownership
+                🍎 Fruitful Assist Factory Setup & Ownership
               </h1>
               <p className="text-indigo-100">
-                AI-powered turnkey factory solutions with complete ownership transfer
+                🍎 Fruitful Assist AI-powered turnkey factory solutions with complete ownership transfer
               </p>
             </div>
             <div className="flex space-x-3">
               <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
                 <Brain className="w-4 h-4 mr-2" />
-                AI Analysis
+                🍎 Fruitful Assist AI
               </Button>
               <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
                 <Rocket className="w-4 h-4 mr-2" />
@@ -205,7 +202,7 @@ export default function FactorySetup() {
         <Tabs defaultValue="factories" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="factories">Factory Portfolio</TabsTrigger>
-            <TabsTrigger value="ai-insights">Fruitful Assist AI</TabsTrigger>
+            <TabsTrigger value="ai-insights">🍎 Fruitful Assist AI</TabsTrigger>
             <TabsTrigger value="production">Production Metrics</TabsTrigger>
             <TabsTrigger value="ownership">Ownership Process</TabsTrigger>
             <TabsTrigger value="setup">New Factory Setup</TabsTrigger>
@@ -326,7 +323,7 @@ export default function FactorySetup() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Brain className="w-6 h-6 mr-2 text-purple-600" />
-                    Fruitful Assist AI - Factory Intelligence
+                    🍎 Fruitful Assist AI - Factory Intelligence
                   </CardTitle>
                   <p className="text-gray-600">
                     Advanced AI analytics for production optimization, market insights, and profitability enhancement
@@ -420,7 +417,7 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-blue-600 mb-2">
-                    {mockProductionMetrics.dailyOutput.toLocaleString()} units
+                    {productionMetrics[0]?.dailyOutput ? productionMetrics[0].dailyOutput.toLocaleString() : "0"} units
                   </div>
                   <p className="text-sm text-gray-600">+12% vs yesterday</p>
                 </CardContent>
@@ -435,9 +432,9 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-green-600 mb-2">
-                    {mockProductionMetrics.efficiency}%
+                    {productionMetrics[0]?.efficiency || 0}%
                   </div>
-                  <Progress value={mockProductionMetrics.efficiency} className="mt-2" />
+                  <Progress value={productionMetrics[0]?.efficiency || 0} className="mt-2" />
                 </CardContent>
               </Card>
 
@@ -450,7 +447,7 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {mockProductionMetrics.qualityScore}%
+                    {productionMetrics[0]?.qualityScore || 0}%
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
@@ -468,7 +465,7 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-orange-600 mb-2">
-                    {mockProductionMetrics.wasteReduction}%
+                    {productionMetrics[0]?.wasteReduction || 0}%
                   </div>
                   <p className="text-sm text-gray-600">vs industry average</p>
                 </CardContent>
@@ -483,7 +480,7 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-yellow-600 mb-2">
-                    {mockProductionMetrics.energySavings}%
+                    {productionMetrics[0]?.energySavings || 0}%
                   </div>
                   <p className="text-sm text-gray-600">R 45k saved monthly</p>
                 </CardContent>
@@ -498,7 +495,7 @@ export default function FactorySetup() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-green-600 mb-2">
-                    {mockProductionMetrics.profitMargin}%
+                    {productionMetrics[0]?.profitMargin || 0}%
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <TrendingUp className="w-4 h-4 mr-1 text-green-500" />

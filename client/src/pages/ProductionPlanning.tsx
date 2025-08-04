@@ -333,7 +333,7 @@ export default function ProductionPlanning() {
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold mb-2">🤖 AI Production Optimizer</h3>
+              <h3 className="text-lg font-semibold mb-2">🍎 Fruitful Assist Production Optimizer</h3>
               <div className="space-y-2 text-blue-100">
                 <p>• Suggested 12% efficiency improvement on EPS Line A by adjusting batch sizes</p>
                 <p>• Recommend scheduling BR9 production during off-peak energy hours (R2,340 savings)</p>

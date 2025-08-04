@@ -60,7 +60,7 @@ export default function InventoryAI() {
       <div className="bg-white border-b border-gray-200 px-8 py-6 -mx-8 -mt-8 mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">AI-Powered Inventory Optimization</h2>
+            <h2 className="text-2xl font-bold text-gray-900">🍎 Fruitful Assist AI-Powered Inventory Optimization</h2>
             <p className="text-gray-600 mt-1">Predictive analytics and intelligent inventory management</p>
           </div>
           <div className="flex items-center space-x-3">
@@ -74,7 +74,7 @@ export default function InventoryAI() {
             </Button>
             <Button className="bg-cornex-blue hover:bg-cornex-dark">
               <Brain className="w-4 h-4 mr-2" />
-              AI Analysis
+              🍎 Fruitful Assist AI
             </Button>
           </div>
         </div>
