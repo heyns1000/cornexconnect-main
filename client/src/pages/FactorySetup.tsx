@@ -210,22 +210,35 @@ export default function FactorySetup() {
 
           <TabsContent value="factories">
             <div className="grid gap-6">
-              {factories.map((factory) => (
-                <Card key={factory.id} className="hover:shadow-lg transition-shadow">
+              {factories.map((factory) => {
+                // Add AI recommendations to factory object
+                const factoryWithRecommendations = {
+                  ...factory,
+                  aiRecommendations: [
+                    "Optimize cutting speeds for 15% efficiency gain",
+                    "Schedule maintenance during off-peak hours",
+                    "Implement renewable energy for cost reduction"
+                  ],
+                  setupDate: new Date(factory.setupDate || Date.now()),
+                  completionDate: new Date(factory.completionDate || Date.now())
+                };
+                
+                return (
+                <Card key={factoryWithRecommendations.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <CardTitle className="flex items-center text-xl">
                           <Factory className="w-5 h-5 mr-2 text-indigo-600" />
-                          {factory.factoryName}
+                          {factoryWithRecommendations.factoryName}
                         </CardTitle>
                         <p className="text-gray-600 flex items-center mt-1">
                           <MapPin className="w-4 h-4 mr-1" />
-                          {factory.location}
+                          {factoryWithRecommendations.location}
                         </p>
                       </div>
-                      <Badge className={getPhaseColor(factory.ownershipPhase)}>
-                        {factory.ownershipPhase.charAt(0).toUpperCase() + factory.ownershipPhase.slice(1)}
+                      <Badge className={getPhaseColor(factoryWithRecommendations.ownershipPhase)}>
+                        {factoryWithRecommendations.ownershipPhase.charAt(0).toUpperCase() + factoryWithRecommendations.ownershipPhase.slice(1)}
                       </Badge>
                     </div>
                   </CardHeader>
@@ -233,12 +246,12 @@ export default function FactorySetup() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                       <div>
                         <h4 className="font-semibold text-gray-700 mb-3">Ownership Progress</h4>
-                        <Progress value={factory.progressPercentage} className="mb-2" />
+                        <Progress value={factoryWithRecommendations.progressPercentage} className="mb-2" />
                         <p className="text-sm text-gray-600">
-                          Payment {factory.currentPayment} of {factory.totalPayments} completed
+                          Payment {factoryWithRecommendations.currentPayment} of {factoryWithRecommendations.totalPayments} completed
                         </p>
                         <p className="text-lg font-bold text-green-600 mt-2">
-                          {formatCurrency(parseInt(factory.totalInvestment), 'ZAR')} Total Investment
+                          {formatCurrency(parseInt(factoryWithRecommendations.totalInvestment), 'ZAR')} Total Investment
                         </p>
                       </div>
                       
@@ -247,15 +260,15 @@ export default function FactorySetup() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Monthly Revenue:</span>
-                            <span className="font-semibold">{formatCurrency(parseInt(factory.monthlyRevenue), 'ZAR')}</span>
+                            <span className="font-semibold">{formatCurrency(parseInt(factoryWithRecommendations.monthlyRevenue), 'ZAR')}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Production Capacity:</span>
-                            <span className="font-semibold">{factory.productionCapacity.toLocaleString()} units/month</span>
+                            <span className="font-semibold">{factoryWithRecommendations.productionCapacity.toLocaleString()} units/month</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">AI Optimization:</span>
-                            <span className="font-semibold text-blue-600">{factory.aiOptimizationLevel}%</span>
+                            <span className="font-semibold text-blue-600">{factoryWithRecommendations.aiOptimizationLevel}%</span>
                           </div>
                         </div>
                       </div>
@@ -265,15 +278,15 @@ export default function FactorySetup() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Connected Stores:</span>
-                            <span className="font-semibold">{factory.connectedStores}</span>
+                            <span className="font-semibold">{factoryWithRecommendations.connectedStores}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Target Stores:</span>
-                            <span className="font-semibold">{factory.targetStores}</span>
+                            <span className="font-semibold">{factoryWithRecommendations.targetStores}</span>
                           </div>
-                          <Progress value={(factory.connectedStores / factory.targetStores) * 100} className="mt-2" />
+                          <Progress value={(factoryWithRecommendations.connectedStores / factoryWithRecommendations.targetStores) * 100} className="mt-2" />
                           <p className="text-xs text-gray-500">
-                            {Math.round((factory.connectedStores / factory.targetStores) * 100)}% coverage achieved
+                            {Math.round((factoryWithRecommendations.connectedStores / factoryWithRecommendations.targetStores) * 100)}% coverage achieved
                           </p>
                         </div>
                       </div>
@@ -285,7 +298,7 @@ export default function FactorySetup() {
                         AI Recommendations
                       </h4>
                       <div className="grid gap-2">
-                        {factory.aiRecommendations.map((rec, index) => (
+                        {(factoryWithRecommendations.aiRecommendations || []).map((rec, index) => (
                           <div key={index} className="flex items-start space-x-2 text-sm">
                             <Zap className="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0" />
                             <span className="text-gray-700">{rec}</span>
@@ -296,8 +309,8 @@ export default function FactorySetup() {
 
                     <div className="flex justify-between items-center mt-6 pt-4 border-t">
                       <div className="text-sm text-gray-500">
-                        Setup: {factory.setupDate.toLocaleDateString()} | 
-                        Completion: {factory.completionDate.toLocaleDateString()}
+                        Setup: {factoryWithRecommendations.setupDate.toLocaleDateString()} | 
+                        Completion: {factoryWithRecommendations.completionDate.toLocaleDateString()}
                       </div>
                       <div className="space-x-2">
                         <Button variant="outline" size="sm">
@@ -312,7 +325,8 @@ export default function FactorySetup() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
