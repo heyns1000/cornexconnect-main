@@ -38,8 +38,12 @@ export default function BusinessIntelligence() {
 
   // Calculate key performance indicators
   const kpis = {
-    totalRevenue: regionalMetrics?.reduce((sum: number, region: any) => sum + parseFloat(region.revenue), 0) || 0,
-    totalUnits: regionalMetrics?.reduce((sum: number, region: any) => sum + region.units, 0) || 0,
+    totalRevenue: (regionalMetrics && Array.isArray(regionalMetrics)) 
+      ? regionalMetrics.reduce((sum: number, region: any) => sum + parseFloat(region.revenue), 0) 
+      : 0,
+    totalUnits: (regionalMetrics && Array.isArray(regionalMetrics)) 
+      ? regionalMetrics.reduce((sum: number, region: any) => sum + parseInt(region.units), 0) 
+      : 0,
     averageOrderValue: 0,
     customerSatisfaction: 94.2,
     inventoryTurnover: 8.3,
@@ -209,7 +213,7 @@ export default function BusinessIntelligence() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {topProducts?.slice(0, 5).map((item: any, index: number) => (
+                  {(topProducts && Array.isArray(topProducts) ? topProducts.slice(0, 5) : []).map((item: any, index: number) => (
                     <div key={item.product.id} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -379,7 +383,7 @@ export default function BusinessIntelligence() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {regionalMetrics?.slice(0, 9).map((metric: any, index: number) => (
+                  {(regionalMetrics && Array.isArray(regionalMetrics) ? regionalMetrics.slice(0, 9) : []).map((metric: any, index: number) => (
                     <div key={metric.region} className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
