@@ -10,7 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Route,
-  Bot
+  Bot,
+  Upload
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { name: "Route Management", href: "/routes", icon: Route },
     { name: "Factory Setup", href: "/factory-setup", icon: Factory },
     { name: "Extended Automation", href: "/automation", icon: Settings },
+    { name: "Excel Upload", href: "/excel-upload", icon: Upload },
     { name: "Business Intelligence", href: "/analytics", icon: TrendingUp },
   ];
 

@@ -13,6 +13,7 @@ import BrandDetail from "@/pages/BrandDetail";
 import RouteManagement from "@/pages/RouteManagement";
 import FactorySetup from "@/pages/FactorySetup";
 import ExtendedAutomation from "@/pages/ExtendedAutomation";
+import ExcelUpload from "@/pages/ExcelUpload";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { FruitfulAssistChatbot, FruitfulAssistFloatingButton } from "@/components/FruitfulAssistChatbot";
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/routes" component={RouteManagement} />
       <Route path="/factory-setup" component={FactorySetup} />
       <Route path="/automation" component={ExtendedAutomation} />
+      <Route path="/excel-upload" component={ExcelUpload} />
       <Route path="/brands/:id" component={BrandDetail} />
     </Switch>
   );

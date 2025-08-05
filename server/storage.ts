@@ -650,6 +650,55 @@ export class DatabaseStorage implements IStorage {
     const [newSchedule] = await db.insert(maintenanceSchedules).values(schedule).returning();
     return newSchedule;
   }
+
+  // Excel Upload
+  async getExcelUploads(): Promise<any[]> {
+    const { excelUploads } = await import("@shared/schema");
+    const { desc } = await import("drizzle-orm");
+    return await db.select().from(excelUploads)
+      .orderBy(desc(excelUploads.uploadedAt));
+  }
+
+  async createExcelUpload(upload: any): Promise<any> {
+    const { excelUploads } = await import("@shared/schema");
+    const [newUpload] = await db.insert(excelUploads).values(upload).returning();
+    return newUpload;
+  }
+
+  async updateExcelUpload(id: string, updates: any): Promise<any> {
+    const { excelUploads } = await import("@shared/schema");
+    const [updated] = await db.update(excelUploads)
+      .set(updates)
+      .where(eq(excelUploads.id, id))
+      .returning();
+    return updated;
+  }
+
+  async createHardwareStoreFromExcel(store: any): Promise<any> {
+    const { hardwareStoresFromExcel } = await import("@shared/schema");
+    const [newStore] = await db.insert(hardwareStoresFromExcel).values(store).returning();
+    return newStore;
+  }
+
+  async createSalesRepRouteFromExcel(route: any): Promise<any> {
+    const { salesRepRoutesFromExcel } = await import("@shared/schema");
+    const [newRoute] = await db.insert(salesRepRoutesFromExcel).values(route).returning();
+    return newRoute;
+  }
+
+  async getHardwareStoresFromExcel(): Promise<any[]> {
+    const { hardwareStoresFromExcel } = await import("@shared/schema");
+    const { desc } = await import("drizzle-orm");
+    return await db.select().from(hardwareStoresFromExcel)
+      .orderBy(desc(hardwareStoresFromExcel.createdAt));
+  }
+
+  async getSalesRepRoutesFromExcel(): Promise<any[]> {
+    const { salesRepRoutesFromExcel } = await import("@shared/schema");
+    const { desc } = await import("drizzle-orm");
+    return await db.select().from(salesRepRoutesFromExcel)
+      .orderBy(desc(salesRepRoutesFromExcel.createdAt));
+  }
 }
 
 export const storage = new DatabaseStorage();

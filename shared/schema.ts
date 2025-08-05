@@ -544,3 +544,74 @@ export type AutomationRule = typeof automationRules.$inferSelect;
 export type AutomationEvent = typeof automationEvents.$inferSelect;
 export type MaintenanceSchedule = typeof maintenanceSchedules.$inferSelect;
 export type InsertFactoryRecommendation = z.infer<typeof insertFactoryRecommendationSchema>;
+
+// Excel Upload Tables
+export const excelUploads = pgTable("excel_uploads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fileName: varchar("file_name").notNull(),
+  mappedName: varchar("mapped_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+  status: varchar("status").notNull().default("pending"), // pending, processing, completed, failed
+  storesCount: integer("stores_count").default(0),
+  routesCount: integer("routes_count").default(0),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"),
+});
+
+export const hardwareStoresFromExcel = pgTable("hardware_stores_from_excel", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  uploadId: varchar("upload_id").references(() => excelUploads.id),
+  storeName: varchar("store_name").notNull(),
+  storeAddress: text("store_address"),
+  cityTown: varchar("city_town"),
+  province: varchar("province"),
+  contactPerson: varchar("contact_person"),
+  phoneNumber: varchar("phone_number"),
+  repName: varchar("rep_name"),
+  visitFrequency: varchar("visit_frequency"),
+  mappedToCornex: varchar("mapped_to_cornex").notNull(), // The Cornex mapping
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const salesRepRoutesFromExcel = pgTable("sales_rep_routes_from_excel", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  uploadId: varchar("upload_id").references(() => excelUploads.id),
+  repName: varchar("rep_name").notNull(),
+  routeName: varchar("route_name"),
+  storeId: varchar("store_id").references(() => hardwareStoresFromExcel.id),
+  visitDay: varchar("visit_day"),
+  visitFrequency: varchar("visit_frequency"),
+  priority: integer("priority").default(1),
+  mappedToCornex: varchar("mapped_to_cornex").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Excel upload relations
+export const excelUploadsRelations = relations(excelUploads, ({ many }) => ({
+  hardwareStores: many(hardwareStoresFromExcel),
+  salesRepRoutes: many(salesRepRoutesFromExcel),
+}));
+
+export const hardwareStoresFromExcelRelations = relations(hardwareStoresFromExcel, ({ one, many }) => ({
+  upload: one(excelUploads, { fields: [hardwareStoresFromExcel.uploadId], references: [excelUploads.id] }),
+  routes: many(salesRepRoutesFromExcel),
+}));
+
+export const salesRepRoutesFromExcelRelations = relations(salesRepRoutesFromExcel, ({ one }) => ({
+  upload: one(excelUploads, { fields: [salesRepRoutesFromExcel.uploadId], references: [excelUploads.id] }),
+  store: one(hardwareStoresFromExcel, { fields: [salesRepRoutesFromExcel.storeId], references: [hardwareStoresFromExcel.id] }),
+}));
+
+// Excel upload schemas
+export const insertExcelUploadSchema = createInsertSchema(excelUploads).omit({ id: true, uploadedAt: true });
+export const insertHardwareStoreFromExcelSchema = createInsertSchema(hardwareStoresFromExcel).omit({ id: true, createdAt: true });
+export const insertSalesRepRouteFromExcelSchema = createInsertSchema(salesRepRoutesFromExcel).omit({ id: true, createdAt: true });
+
+// Excel upload types
+export type ExcelUpload = typeof excelUploads.$inferSelect;
+export type InsertExcelUpload = z.infer<typeof insertExcelUploadSchema>;
+export type HardwareStoreFromExcel = typeof hardwareStoresFromExcel.$inferSelect;
+export type InsertHardwareStoreFromExcel = z.infer<typeof insertHardwareStoreFromExcelSchema>;
+export type SalesRepRouteFromExcel = typeof salesRepRoutesFromExcel.$inferSelect;
+export type InsertSalesRepRouteFromExcel = z.infer<typeof insertSalesRepRouteFromExcelSchema>;

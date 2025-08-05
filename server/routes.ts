@@ -12,6 +12,32 @@ import {
   insertFactoryRecommendationSchema
 } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import * as XLSX from "xlsx";
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+  fileFilter: (req, file, cb) => {
+    const isExcel = file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                   file.mimetype === 'application/vnd.ms-excel' ||
+                   file.originalname.match(/\.(xlsx|xls)$/i);
+    cb(null, isExcel);
+  }
+});
+
+// Map file names to Cornex references
+const mapFileNameToCornex = (fileName: string): string => {
+  const lowerName = fileName.toLowerCase();
+  if (lowerName.includes('zollie')) return 'Cornex Zollie District Routes';
+  if (lowerName.includes('homemart')) return 'Cornex Homemart Store Network';
+  if (lowerName.includes('tripot')) return 'Cornex Tripot Distribution Points';
+  if (lowerName.includes('cornice maker')) return 'Cornex Cornice Maker Retailers';
+  return `Cornex ${fileName}`;
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize sample data
@@ -510,6 +536,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating maintenance schedule:", error);
       res.status(500).json({ error: "Failed to create maintenance schedule" });
+    }
+  });
+
+  // Excel Upload Routes
+  app.post("/api/excel-upload", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const { mappedName } = req.body;
+      const finalMappedName = mappedName || mapFileNameToCornex(req.file.originalname);
+
+      // Create upload record
+      const upload = await storage.createExcelUpload({
+        fileName: req.file.originalname,
+        mappedName: finalMappedName,
+        fileSize: req.file.size,
+        status: "processing"
+      });
+
+      try {
+        // Parse Excel file
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        let storesCount = 0;
+        let routesCount = 0;
+
+        // Process each row
+        for (const row of jsonData as any[]) {
+          // Create hardware store record
+          const storeData = {
+            uploadId: upload.id,
+            storeName: row['Store Name'] || row['StoreName'] || '',
+            storeAddress: row['Store Address'] || row['Address'] || '',
+            cityTown: row['City/Town'] || row['City'] || row['Town'] || '',
+            province: row['Province'] || '',
+            contactPerson: row['Contact Person'] || row['Contact'] || '',
+            phoneNumber: row['Phone Number'] || row['Phone'] || '',
+            repName: row['Rep Name'] || row['Representative'] || '',
+            visitFrequency: row['Visit Frequency'] || row['Frequency'] || '',
+            mappedToCornex: finalMappedName
+          };
+
+          if (storeData.storeName) {
+            const store = await storage.createHardwareStoreFromExcel(storeData);
+            storesCount++;
+
+            // Create route record if rep name exists
+            if (storeData.repName) {
+              await storage.createSalesRepRouteFromExcel({
+                uploadId: upload.id,
+                repName: storeData.repName,
+                routeName: `${storeData.repName} - ${storeData.cityTown}`,
+                storeId: store.id,
+                visitFrequency: storeData.visitFrequency,
+                mappedToCornex: finalMappedName
+              });
+              routesCount++;
+            }
+          }
+        }
+
+        // Update upload status
+        await storage.updateExcelUpload(upload.id, {
+          status: "completed",
+          storesCount,
+          routesCount,
+          metadata: { totalRows: jsonData.length }
+        });
+
+        res.json({ 
+          success: true, 
+          uploadId: upload.id,
+          storesCount, 
+          routesCount,
+          message: `Successfully processed ${storesCount} stores and ${routesCount} routes`
+        });
+
+      } catch (processError) {
+        console.error("Error processing Excel file:", processError);
+        await storage.updateExcelUpload(upload.id, {
+          status: "failed",
+          errorMessage: "Failed to process Excel file"
+        });
+        res.status(500).json({ error: "Failed to process Excel file" });
+      }
+
+    } catch (error) {
+      console.error("Error uploading Excel file:", error);
+      res.status(500).json({ error: "Failed to upload Excel file" });
+    }
+  });
+
+  app.get("/api/excel-uploads", async (req, res) => {
+    try {
+      const uploads = await storage.getExcelUploads();
+      res.json(uploads);
+    } catch (error) {
+      console.error("Error fetching Excel uploads:", error);
+      res.status(500).json({ error: "Failed to fetch Excel uploads" });
+    }
+  });
+
+  app.get("/api/hardware-stores-excel", async (req, res) => {
+    try {
+      const stores = await storage.getHardwareStoresFromExcel();
+      res.json(stores);
+    } catch (error) {
+      console.error("Error fetching hardware stores from Excel:", error);
+      res.status(500).json({ error: "Failed to fetch hardware stores from Excel" });
+    }
+  });
+
+  app.get("/api/routes-excel", async (req, res) => {
+    try {
+      const routes = await storage.getSalesRepRoutesFromExcel();
+      res.json(routes);
+    } catch (error) {
+      console.error("Error fetching routes from Excel:", error);
+      res.status(500).json({ error: "Failed to fetch routes from Excel" });
     }
   });
 
