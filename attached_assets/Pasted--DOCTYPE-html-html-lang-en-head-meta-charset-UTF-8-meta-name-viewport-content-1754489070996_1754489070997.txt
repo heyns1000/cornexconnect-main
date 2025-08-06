@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📦 FAA.ZONE - Packaging & Logistics Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2d3748; /* bg-gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4a5568; /* bg-gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* bg-gray-500 */
+        }
+        /* Specific styling for the "Coming Soon" badge */
+        .coming-soon-badge {
+            position: absolute;
+            top: 0.5rem; /* Adjust as needed */
+            right: 0.5rem; /* Adjust as needed */
+            background-color: #f59e0b; /* Amber-500 */
+            color: #1f2937; /* Gray-800 */
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; /* Full rounded */
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+
+    <!-- Global Header -->
+    <header id="global-header" class="bg-gray-800 shadow-lg py-4 px-6 md:px-10 sticky top-0 z-50">
+        <div class="container mx-auto flex items-start justify-between flex-wrap">
+            <!-- Left: Logo and Main Title -->
+            <div class="flex items-center mb-4 md:mb-0">
+                <span class="text-3xl mr-3">📦</span>
+                <!-- The main title link, now pointing to the root of the SPA -->
+                <a href="/" class="text-2xl md:text-3xl font-bold text-gray-100 hover:text-white transition-colors duration-200" id="main-title-link">
+                    FAA.ZONE <span class="text-gray-100">Sovereign Scrolls</span>
+                </a>
+            </div>
+
+            <!-- Right: Subtitle and Main Navigation Links -->
+            <div class="flex flex-col items-center md:items-end w-full md:w-auto">
+                <span class="text-xl md:text-2xl text-gray-400 mb-2 mt-4 md:mt-0">Global Supply Chain Grid</span>
+                <nav class="w-full md:w-auto">
+                    <ul class="flex flex-wrap justify-center md:justify-end space-x-2 md:space-x-4 text-sm md:text-base">
+                        <!-- Main navigation links now point to conceptual external paths -->
+                        <li><a href="/" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-sector-dashboard">Sector Dashboard</a></li>
+                        <li><a href="/admin.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-admin">Admin Login</a></li>
+                        <li><a href="/nodes.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-nodes">Node Setup</a></li>
+                        <li><a href="/portal.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-portal">Distributor Portal</a></li>
+                        <li><a href="/monitor.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-monitor">Pulse Monitor</a></li>
+                        <li><a href="/pricing.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-pricing">Pricing</a></li>
+                        <li><a href="/support.html" class="px-3 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200" id="nav-support">Support</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area - Dynamic View Container -->
+    <main id="main-content" class="flex-grow container mx-auto px-6 py-8 md:py-12">
+        <!-- Content will be injected here by JavaScript -->
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="bg-gray-800 py-6 px-6 md:px-10 mt-12">
+        <div class="container mx-auto text-center text-gray-400 text-sm">
+            <p>&copy; 2025 FAA.ZONE Sovereign Scrolls. All rights reserved.</p>
+            <p class="mt-2">
+                Part of the Global Supply Chain Grid · Powered by VaultMesh™ & TreatyMesh™ Protocols.
+            </p>
+            <div class="flex flex-wrap justify-center space-x-4 mt-4">
+                <a href="#" class="hover:text-white transition-colors duration-200">Privacy Policy</a>
+                <span class="text-gray-600">|</span>
+                <a href="#" class="hover:text-white transition-colors duration-200">Terms of Service</a>
+                <span class="text-gray-600">|</span>
+                <a href="#" class="hover:text-white transition-colors duration-200">Contact Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. Data Definitions ---
+        const brands = [
+            {
+                name: 'CrateLogic™',
+                purpose: 'Intelligent Container Management',
+                icon: '📦',
+                color: 'green',
+                path: '/sectors/packaging-logistics/cratelogic/index.html', // External path
+                subnodes: ['BoxNode™', 'CrateMap™', 'PackSync™', 'CrateSync™'],
+                isCompleted: true
+            },
+            {
+                name: 'PackChain™',
+                purpose: 'Supply Chain Traceability',
+                icon: '🔗',
+                color: 'blue',
+                path: '/sectors/packaging-logistics/packchain/index.html',
+                subnodes: ['VendorPack™', 'LabelTrace™', 'ShipGrid™', 'ScrollWrap™'],
+                isCompleted: true
+            },
+            {
+                name: 'LabelFlow™',
+                purpose: 'Automated Labeling & Identification',
+                icon: '🏷️',
+                color: 'purple',
+                path: '/sectors/packaging-logistics/labelflow/index.html',
+                subnodes: ['PrintNode™', 'ScrollCode™', 'InkRoute™', 'LabelSync™'],
+                isCompleted: true
+            },
+            {
+                name: 'SortFleet™',
+                purpose: 'Automated Logistics Routing',
+                icon: '🚚',
+                color: 'orange',
+                path: '/sectors/packaging-logistics/sortfleet/index.html',
+                subnodes: ['SortPulse™', 'BinLogic™', 'FleetTrack™', 'ScrollSort™'],
+                isCompleted: true
+            },
+            {
+                name: 'RouteMesh™',
+                purpose: 'Dynamic Delivery Network Optimization',
+                icon: '🌐',
+                color: 'cyan',
+                path: '/sectors/packaging-logistics/routemesh/index.html',
+                subnodes: ['NodeMap™', 'GeoSignal™', 'DropLink™', 'RouteFlow™'],
+                isCompleted: true
+            },
+            {
+                name: 'LogiStack™',
+                purpose: 'Warehouse Automation & Inventory',
+                icon: '🏭',
+                color: 'indigo',
+                path: '/sectors/packaging-logistics/logistack/index.html',
+                subnodes: ['ScrollStack™', 'YieldSync™', 'PayoutRoute™', 'StackNode™'],
+                isCompleted: true
+            },
+            {
+                name: 'CargoVault™',
+                purpose: 'Secure Cargo & Asset Tracking',
+                icon: '🔒',
+                color: 'red',
+                path: '/sectors/packaging-logistics/cargovault/index.html',
+                subnodes: ['VaultLink™', 'WeightTag™', 'CargoScan™', 'CargoClaim™'],
+                isCompleted: true
+            },
+            {
+                name: 'PalletPath™',
+                purpose: 'Pallet & Shipment Flow Management',
+                icon: '🛤️',
+                color: 'lime',
+                path: '/sectors/packaging-logistics/palletpath/index.html', // Placeholder path
+                subnodes: ['PathFinder™', 'RackTrace™', 'GridStore™', 'LoadMark™'],
+                isCompleted: false // Not yet completed
+            },
+            {
+                name: 'DeliveryX™',
+                purpose: 'Last-Mile Delivery Solution',
+                icon: '🚀',
+                color: 'yellow',
+                path: '/sectors/packaging-logistics/deliveryx/index.html', // Placeholder path
+                subnodes: ['LastMile™', 'ScanDrop™', 'AgentTrack™', 'QuickChain™'],
+                isCompleted: false // Not yet completed
+            },
+            {
+                name: 'DropLoop™',
+                purpose: 'Returns & Reverse Logistics',
+                icon: '🔄',
+                color: 'pink',
+                path: '/sectors/packaging-logistics/droploop/index.html', // Placeholder path
+                subnodes: ['LoopID™', 'VendorDrop™', 'TimeGate™', 'LoopConfirm™'],
+                isCompleted: false // Not yet completed
+            },
+            // Add more brands here as needed, setting isCompleted: false
+        ];
+
+        // --- 2. Dynamic Content Generator Functions ---
+        
+        // This function is now only used for "Coming Soon" brands within the SPA context.
+        // For completed brands, the links will navigate to external HTML files.
+        function generateBrandComingSoonContent(brand) {
+            const colorClass = brand.color;
+            return `
+                <div class="space-y-12">
+                    <!-- Brand Introduction Section (Simplified for Coming Soon) -->
+                    <section class="text-center mb-12 bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-700">
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                            ${brand.icon} ${brand.name} - Coming Soon!
+                        </h2>
+                        <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+                            The full dashboard for ${brand.name} is currently under active development as part of the FAA.ZONE's Global Supply Chain Grid expansion.
+                            We're working hard to bring you comprehensive insights and control for ${brand.purpose}.
+                        </p>
+                        <p class="text-2xl font-semibold text-${colorClass}-400 mt-8">
+                            Stay tuned for updates!
+                        </p>
+                    </section>
+                </div>
+            `;
+        }
+
+        // Function to render the main sector dashboard
+        function renderSectorDashboard() {
+            mainContent.innerHTML = `
+                <!-- Sector Introduction -->
+                <section class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4">
+                        📦 Packaging & Logistics Sector - FAA.ZONE Sovereign Scrolls
+                    </h2>
+                    <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+                        Welcome to the Global Supply Chain Grid, where the future of intelligent packaging and seamless logistics unfolds. Our sector drives efficiency, security, and transparency across the world's most complex supply networks, powered by VaultMesh™ and TreatyMesh™ protocols.
+                    </p>
+                </section>
+
+                <!-- Operational Metrics -->
+                <section class="mb-12">
+                    <h3 class="text-3xl font-semibold text-gray-400 mb-6 text-center">Operational Metrics</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-800 rounded-lg shadow-xl p-6 text-center border border-gray-700">
+                            <p class="text-5xl font-bold text-gray-400 mb-2">1.2 Trillion</p>
+                            <p class="text-xl text-gray-300">Global Throughput (Units/Year)</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg shadow-xl p-6 text-center border border-gray-700">
+                            <p class="text-5xl font-bold text-gray-400 mb-2">8,750+</p>
+                            <p class="text-xl text-gray-300">Active Distribution Hubs</p>
+                        </div>
+                        <div class="bg-gray-800 rounded-lg shadow-xl p-6 text-center border border-gray-700">
+                            <p class="text-5xl font-bold text-gray-400 mb-2">48 Hours</p>
+                            <p class="text-xl text-gray-300">Average Supply Chain Latency</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Core Brands / Nodes Navigation -->
+                <section>
+                    <h3 class="text-3xl font-semibold text-gray-400 mb-6 text-center">Core Brands / Nodes</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="brands-grid">
+                        ${brands.map(brand => `
+                            <div class="relative">
+                                ${!brand.isCompleted ? `<span class="coming-soon-badge">Coming Soon</span>` : ''}
+                                <!-- Link now points to external HTML file for completed brands, or internal hash for coming soon -->
+                                <a href="${brand.isCompleted ? brand.path : `#brand-${brand.name.toLowerCase().replace(/™/g, '').replace(/\s/g, '')}`}"
+                                   class="block brand-link ${!brand.isCompleted ? 'pointer-events-none opacity-50' : ''}"
+                                   data-brand="${brand.name.toLowerCase().replace(/™/g, '').replace(/\s/g, '')}"
+                                   ${!brand.isCompleted ? 'onclick="return false;"' : ''} <!-- Prevent navigation for coming soon -->
+                                >
+                                    <div class="bg-gray-800 rounded-lg shadow-xl p-6 text-center border border-gray-700 hover:border-${brand.color}-500 transition-all duration-300 h-full flex flex-col justify-between">
+                                        <div>
+                                            <span class="text-4xl mb-4 block">${brand.icon}</span>
+                                            <h4 class="text-2xl font-semibold text-white mb-2">${brand.name}</h4>
+                                            <p class="text-gray-400">${brand.purpose}</p>
+                                        </div>
+                                        <button class="mt-4 w-full bg-${brand.color}-600 ${!brand.isCompleted ? 'bg-gray-700 text-gray-300 cursor-not-allowed' : `hover:bg-${brand.color}-700 text-white`} font-bold py-3 px-6 rounded-md transition-colors duration-200 shadow-md" ${!brand.isCompleted ? 'disabled' : ''}>
+                                            ${brand.isCompleted ? `Explore ${brand.name}` : 'Under Development'}
+                                        </button>
+                                    </div>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+            // Reset header color for sector dashboard
+            updateHeaderStyle('gray');
+            setActiveNav('nav-sector-dashboard');
+        }
+
+        // Function to render a specific brand's "Coming Soon" dashboard (if not completed)
+        function renderBrandDashboard(brandName) {
+            const brand = brands.find(b => b.name.toLowerCase().replace(/™/g, '').replace(/\s/g, '') === brandName);
+            if (brand && !brand.isCompleted) {
+                mainContent.innerHTML = generateBrandComingSoonContent(brand);
+                updateHeaderStyle(brand.color);
+                setActiveNav(null); // No main nav item active for brand pages
+                // Add a back button for "Coming Soon" pages
+                mainContent.insertAdjacentHTML('afterbegin', `
+                    <div class="mb-8 text-center">
+                        <a href="/" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                            &larr; Back to Sector Dashboard
+                        </a>
+                    </div>
+                `);
+            } else {
+                // If a completed brand is somehow accessed via hash (which shouldn't happen with direct links)
+                // or if an unknown hash is provided
+                renderNotFound();
+            }
+        }
+
+        // Function to render a "Not Found" page
+        function renderNotFound() {
+            mainContent.innerHTML = `
+                <section class="text-center py-12 bg-gray-800 rounded-lg shadow-xl p-8 border border-gray-700">
+                    <h2 class="text-4xl font-bold text-red-500 mb-4">404 - Page Not Found</h2>
+                    <p class="text-xl text-gray-300">The requested brand or page could not be found.</p>
+                    <div class="mt-8">
+                        <a href="/" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                            &larr; Back to Sector Dashboard
+                        </a>
+                    </div>
+                </section>
+            `;
+            updateHeaderStyle('red'); // Use red for 404
+            setActiveNav(null);
+        }
+
+        // Function to set active navigation link
+        function setActiveNav(activeId) {
+            navLinks.forEach(link => {
+                link.classList.remove('bg-gray-700', 'bg-green-700', 'bg-blue-700', 'bg-purple-700', 'bg-orange-700', 'bg-cyan-700', 'bg-indigo-700', 'bg-red-700', 'bg-yellow-600', 'bg-lime-600', 'bg-pink-600');
+                link.classList.add('hover:bg-gray-700');
+            });
+            const activeLink = document.getElementById(activeId);
+            if (activeLink) {
+                activeLink.classList.remove('hover:bg-gray-700');
+                activeLink.classList.add('bg-gray-700');
+            }
+        }
+        
+        // --- 3. Rendering Logic & Event Listeners ---
+        const mainContent = document.getElementById('main-content');
+        const navLinks = document.querySelectorAll('#global-header nav ul li a');
+        const mainTitleLink = document.getElementById('main-title-link');
+
+        // Function to update the header style based on the brand
+        function updateHeaderStyle(brandColor) {
+            if (mainTitleLink) {
+                // Remove all previous brand colors
+                mainTitleLink.classList.remove(
+                    'text-green-400', 'text-blue-400', 'text-purple-400', 'text-orange-400',
+                    'text-cyan-400', 'text-indigo-400', 'text-red-400', 'text-yellow-400',
+                    'text-lime-400', 'text-pink-400', 'text-gray-100'
+                );
+                // Add the new brand color or default to gray for sector dashboard
+                mainTitleLink.classList.add(`text-${brandColor}-400`);
+
+                // Ensure the "Sovereign Scrolls" span remains gray-100
+                const sovereignScrollsSpan = mainTitleLink.querySelector('span');
+                if (sovereignScrollsSpan) {
+                    sovereignScrollsSpan.classList.remove(
+                        'text-green-400', 'text-blue-400', 'text-purple-400', 'text-orange-400',
+                        'text-cyan-400', 'text-indigo-400', 'text-red-400', 'text-yellow-400',
+                        'text-lime-400', 'text-pink-400'
+                    );
+                    sovereignScrollsSpan.classList.add('text-gray-100');
+                }
+            }
+        }
+        
+        // --- 4. SPA Router Logic (Now primarily for Sector Dashboard and "Coming Soon" brands) ---
+        function handleRouting() {
+            const path = window.location.hash.slice(1);
+            if (path.startsWith('brand-')) {
+                const brandName = path.substring(6);
+                renderBrandDashboard(brandName); // This will now render the "Coming Soon" page for uncompleted brands
+            } else if (path === 'sector-dashboard' || path === '') {
+                renderSectorDashboard();
+            } else {
+                // For any other hash, or direct access to root, go to sector dashboard
+                window.location.hash = '#sector-dashboard';
+                renderSectorDashboard();
+            }
+        }
+
+        // Initial render and event listeners
+        window.addEventListener('hashchange', handleRouting);
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if the URL is the root, if so, set hash to sector-dashboard
+            if (window.location.pathname === '/' && window.location.hash === '') {
+                window.location.hash = '#sector-dashboard';
+            }
+            handleRouting();
+        });
+
+        // No need for delegated click listener on mainContent for brand-link if they are external
+        // The `href` attribute on the `<a>` tag will handle navigation directly.
+        // The `onclick="return false;"` on coming soon brands will prevent navigation.
+
+    </script>
+</body>
+</html>

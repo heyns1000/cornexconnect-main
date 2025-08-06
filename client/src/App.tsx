@@ -17,6 +17,7 @@ import PurchaseOrders from "@/pages/PurchaseOrders";
 import FactorySetup from "@/pages/FactorySetup";
 import ExtendedAutomation from "@/pages/ExtendedAutomation";
 import ExcelUpload from "@/pages/ExcelUpload";
+import LogisticsIntegration from "@/pages/LogisticsIntegration";
 import Landing from "@/pages/Landing";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/factory-setup" component={FactorySetup} />
         <Route path="/automation" component={ExtendedAutomation} />
         <Route path="/excel-upload" component={ExcelUpload} />
+        <Route path="/logistics" component={LogisticsIntegration} />
         <Route path="/brands/:id" component={BrandDetail} />
       </Switch>
     </PageTransition>

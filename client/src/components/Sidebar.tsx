@@ -12,7 +12,8 @@ import {
   Route,
   Bot,
   Upload,
-  ShoppingCart
+  ShoppingCart,
+  Truck
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { name: "Global Distributors", href: "/distributors", icon: Users },
     { name: "Route Management", href: "/routes", icon: Route },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
+    { name: "SA Logistics", href: "/logistics", icon: Truck },
     { name: "Factory Setup", href: "/factory-setup", icon: Factory },
     { name: "Extended Automation", href: "/automation", icon: Settings },
     { name: "Excel Upload", href: "/excel-upload", icon: Upload },

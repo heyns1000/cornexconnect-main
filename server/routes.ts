@@ -955,6 +955,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logistics integration routes
+  app.get("/api/logistics-partners", async (req, res) => {
+    try {
+      const partners = await storage.getLogisticsPartners();
+      res.json(partners);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch logistics partners" });
+    }
+  });
+
+  app.get("/api/logistics-brands", async (req, res) => {
+    try {
+      const brands = await storage.getLogisticsBrands();
+      res.json(brands);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch logistics brands" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
