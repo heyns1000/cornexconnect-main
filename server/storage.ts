@@ -5,6 +5,7 @@ import {
   factorySetups, aiInsights, productionMetrics, factoryRecommendations,
   automationRules, automationEvents, maintenanceSchedules,
   excelUploads, hardwareStoresFromExcel, salesRepRoutesFromExcel,
+  purchaseOrders, purchaseOrderItems, poStatusHistory, poDocuments,
   type User, type InsertUser, type UpsertUser, type Product, type InsertProduct,
   type Inventory, type InsertInventory, type Distributor, type InsertDistributor,
   type Order, type InsertOrder, type OrderItem, type InsertOrderItem,
@@ -24,7 +25,11 @@ import {
   type FactoryRecommendation, type InsertFactoryRecommendation,
   type AutomationRule, type InsertAutomationRule,
   type AutomationEvent, type InsertAutomationEvent,
-  type MaintenanceSchedule, type InsertMaintenanceSchedule
+  type MaintenanceSchedule, type InsertMaintenanceSchedule,
+  type PurchaseOrder, type InsertPurchaseOrder,
+  type PurchaseOrderItem, type InsertPurchaseOrderItem,
+  type PoStatusHistory, type InsertPoStatusHistory,
+  type PoDocument, type InsertPoDocument
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc, asc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -137,6 +142,24 @@ export interface IStorage {
   
   getMaintenanceSchedules(): Promise<MaintenanceSchedule[]>;
   createMaintenanceSchedule(schedule: InsertMaintenanceSchedule): Promise<MaintenanceSchedule>;
+  
+  // Purchase Order System
+  getPurchaseOrders(): Promise<(PurchaseOrder & { items?: PurchaseOrderItem[] })[]>;
+  getPurchaseOrder(id: string): Promise<(PurchaseOrder & { 
+    items: (PurchaseOrderItem & { product: Product })[];
+    statusHistory: PoStatusHistory[];
+    documents: PoDocument[];
+  }) | undefined>;
+  createPurchaseOrder(order: InsertPurchaseOrder): Promise<PurchaseOrder>;
+  updatePurchaseOrder(id: string, order: Partial<InsertPurchaseOrder>): Promise<PurchaseOrder>;
+  addPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem>;
+  updatePurchaseOrderStatus(id: string, status: string, userId?: string, reason?: string, notes?: string): Promise<PurchaseOrder>;
+  generatePONumber(): Promise<string>;
+  getPurchaseOrdersByStatus(status: string): Promise<PurchaseOrder[]>;
+  getPurchaseOrdersByDateRange(startDate: Date, endDate: Date): Promise<PurchaseOrder[]>;
+  searchPurchaseOrders(query: string): Promise<PurchaseOrder[]>;
+  addStatusHistory(history: InsertPoStatusHistory): Promise<PoStatusHistory>;
+  addDocument(document: InsertPoDocument): Promise<PoDocument>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -791,6 +814,220 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error syncing route to main directory:', error);
     }
+  }
+  
+  // Purchase Order System Implementation
+  async getPurchaseOrders(): Promise<(PurchaseOrder & { items?: PurchaseOrderItem[] })[]> {
+    const orders = await db.select().from(purchaseOrders).orderBy(desc(purchaseOrders.createdAt));
+    
+    // Get items count for each order
+    const ordersWithItems = await Promise.all(orders.map(async (order) => {
+      const items = await db.select().from(purchaseOrderItems).where(eq(purchaseOrderItems.purchaseOrderId, order.id));
+      return { ...order, items };
+    }));
+    
+    return ordersWithItems;
+  }
+
+  async getPurchaseOrder(id: string): Promise<(PurchaseOrder & { 
+    items: (PurchaseOrderItem & { product: Product })[];
+    statusHistory: PoStatusHistory[];
+    documents: PoDocument[];
+  }) | undefined> {
+    const [order] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id));
+    if (!order) return undefined;
+
+    // Get items with product details
+    const items = await db
+      .select({
+        id: purchaseOrderItems.id,
+        purchaseOrderId: purchaseOrderItems.purchaseOrderId,
+        productId: purchaseOrderItems.productId,
+        quantity: purchaseOrderItems.quantity,
+        unitPrice: purchaseOrderItems.unitPrice,
+        lineTotal: purchaseOrderItems.lineTotal,
+        estimatedProductionTime: purchaseOrderItems.estimatedProductionTime,
+        actualProductionTime: purchaseOrderItems.actualProductionTime,
+        productionStatus: purchaseOrderItems.productionStatus,
+        customSpecifications: purchaseOrderItems.customSpecifications,
+        packagingNotes: purchaseOrderItems.packagingNotes,
+        createdAt: purchaseOrderItems.createdAt,
+        product: products
+      })
+      .from(purchaseOrderItems)
+      .leftJoin(products, eq(purchaseOrderItems.productId, products.id))
+      .where(eq(purchaseOrderItems.purchaseOrderId, id));
+
+    // Get status history
+    const statusHistory = await db
+      .select()
+      .from(poStatusHistory)
+      .where(eq(poStatusHistory.purchaseOrderId, id))
+      .orderBy(desc(poStatusHistory.timestamp));
+
+    // Get documents
+    const documents = await db
+      .select()
+      .from(poDocuments)
+      .where(eq(poDocuments.purchaseOrderId, id))
+      .orderBy(desc(poDocuments.uploadedAt));
+
+    return {
+      ...order,
+      items: items.map(item => ({ 
+        ...item,
+        product: item.product!
+      })),
+      statusHistory,
+      documents
+    };
+  }
+
+  async createPurchaseOrder(order: InsertPurchaseOrder): Promise<PurchaseOrder> {
+    // Generate PO number if not provided
+    const poNumber = order.poNumber || await this.generatePONumber();
+
+    const [newOrder] = await db.insert(purchaseOrders).values({
+      ...order,
+      poNumber
+    }).returning();
+    
+    // Add initial status history
+    await this.addStatusHistory({
+      purchaseOrderId: newOrder.id,
+      newStatus: 'pending',
+      changeReason: 'Purchase order created',
+      notes: 'Initial creation of purchase order'
+    });
+
+    return newOrder;
+  }
+
+  async updatePurchaseOrder(id: string, order: Partial<InsertPurchaseOrder>): Promise<PurchaseOrder> {
+    const [updatedOrder] = await db
+      .update(purchaseOrders)
+      .set({ ...order, updatedAt: new Date() })
+      .where(eq(purchaseOrders.id, id))
+      .returning();
+    
+    return updatedOrder;
+  }
+
+  async addPurchaseOrderItem(item: InsertPurchaseOrderItem): Promise<PurchaseOrderItem> {
+    const [newItem] = await db.insert(purchaseOrderItems).values(item).returning();
+    
+    // Update order totals
+    await this.recalculateOrderTotals(item.purchaseOrderId);
+    
+    return newItem;
+  }
+
+  async updatePurchaseOrderStatus(id: string, status: string, userId?: string, reason?: string, notes?: string): Promise<PurchaseOrder> {
+    // Get current status
+    const [currentOrder] = await db.select().from(purchaseOrders).where(eq(purchaseOrders.id, id));
+    if (!currentOrder) throw new Error('Purchase order not found');
+
+    // Update status
+    const updates: any = { status, updatedAt: new Date() };
+    if (status === 'approved' && userId) {
+      updates.approvedBy = userId;
+      updates.approvedAt = new Date();
+    }
+
+    const [updatedOrder] = await db
+      .update(purchaseOrders)
+      .set(updates)
+      .where(eq(purchaseOrders.id, id))
+      .returning();
+
+    // Add status history
+    await this.addStatusHistory({
+      purchaseOrderId: id,
+      previousStatus: currentOrder.status,
+      newStatus: status,
+      changedBy: userId,
+      changeReason: reason || `Status changed to ${status}`,
+      notes
+    });
+
+    return updatedOrder;
+  }
+
+  async generatePONumber(): Promise<string> {
+    const year = new Date().getFullYear();
+    const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    
+    // Get the last PO number for this month
+    const lastPO = await db
+      .select()
+      .from(purchaseOrders)
+      .where(sql`po_number LIKE ${`PO-${year}${month}%`}`)
+      .orderBy(desc(purchaseOrders.poNumber))
+      .limit(1);
+
+    let nextSequence = 1;
+    if (lastPO.length > 0) {
+      const lastSequence = parseInt(lastPO[0].poNumber.split('-')[2]) || 0;
+      nextSequence = lastSequence + 1;
+    }
+
+    return `PO-${year}${month}-${nextSequence.toString().padStart(4, '0')}`;
+  }
+
+  async getPurchaseOrdersByStatus(status: string): Promise<PurchaseOrder[]> {
+    return await db.select().from(purchaseOrders).where(eq(purchaseOrders.status, status)).orderBy(desc(purchaseOrders.createdAt));
+  }
+
+  async getPurchaseOrdersByDateRange(startDate: Date, endDate: Date): Promise<PurchaseOrder[]> {
+    return await db
+      .select()
+      .from(purchaseOrders)
+      .where(and(
+        gte(purchaseOrders.orderDate, startDate),
+        lte(purchaseOrders.orderDate, endDate)
+      ))
+      .orderBy(desc(purchaseOrders.createdAt));
+  }
+
+  async searchPurchaseOrders(query: string): Promise<PurchaseOrder[]> {
+    return await db
+      .select()
+      .from(purchaseOrders)
+      .where(or(
+        ilike(purchaseOrders.poNumber, `%${query}%`),
+        ilike(purchaseOrders.customerName, `%${query}%`),
+        ilike(purchaseOrders.customerEmail, `%${query}%`)
+      ))
+      .orderBy(desc(purchaseOrders.createdAt));
+  }
+
+  async addStatusHistory(history: InsertPoStatusHistory): Promise<PoStatusHistory> {
+    const [newHistory] = await db.insert(poStatusHistory).values(history).returning();
+    return newHistory;
+  }
+
+  async addDocument(document: InsertPoDocument): Promise<PoDocument> {
+    const [newDocument] = await db.insert(poDocuments).values(document).returning();
+    return newDocument;
+  }
+
+  // Helper method to recalculate order totals
+  private async recalculateOrderTotals(orderId: string): Promise<void> {
+    const items = await db.select().from(purchaseOrderItems).where(eq(purchaseOrderItems.purchaseOrderId, orderId));
+    
+    const subtotal = items.reduce((sum, item) => sum + parseFloat(item.lineTotal.toString()), 0);
+    const taxAmount = subtotal * 0.15; // 15% VAT
+    const total = subtotal + taxAmount;
+
+    await db
+      .update(purchaseOrders)
+      .set({
+        subtotal: subtotal.toString(),
+        taxAmount: taxAmount.toString(),
+        totalAmount: total.toString(),
+        updatedAt: new Date()
+      })
+      .where(eq(purchaseOrders.id, orderId));
   }
 }
 

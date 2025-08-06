@@ -10,7 +10,11 @@ import {
   insertFactorySetupSchema,
   insertAiInsightSchema,
   insertProductionMetricsSchema,
-  insertFactoryRecommendationSchema
+  insertFactoryRecommendationSchema,
+  insertPurchaseOrderSchema,
+  insertPurchaseOrderItemSchema,
+  insertPoStatusHistorySchema,
+  insertPoDocumentSchema
 } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -819,6 +823,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard summary" });
+    }
+  });
+
+  // Purchase Order System Routes
+  app.get("/api/purchase-orders", isAuthenticated, async (req, res) => {
+    try {
+      const status = req.query.status as string;
+      const startDate = req.query.startDate as string;
+      const endDate = req.query.endDate as string;
+      const search = req.query.search as string;
+
+      let orders;
+      if (status) {
+        orders = await storage.getPurchaseOrdersByStatus(status);
+      } else if (startDate && endDate) {
+        orders = await storage.getPurchaseOrdersByDateRange(new Date(startDate), new Date(endDate));
+      } else if (search) {
+        orders = await storage.searchPurchaseOrders(search);
+      } else {
+        orders = await storage.getPurchaseOrders();
+      }
+
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching purchase orders:", error);
+      res.status(500).json({ error: "Failed to fetch purchase orders" });
+    }
+  });
+
+  app.get("/api/purchase-orders/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const order = await storage.getPurchaseOrder(id);
+      
+      if (!order) {
+        return res.status(404).json({ error: "Purchase order not found" });
+      }
+
+      res.json(order);
+    } catch (error) {
+      console.error("Error fetching purchase order:", error);
+      res.status(500).json({ error: "Failed to fetch purchase order" });
+    }
+  });
+
+  app.post("/api/purchase-orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const validatedData = insertPurchaseOrderSchema.parse({
+        ...req.body,
+        createdBy: userId
+      });
+
+      const order = await storage.createPurchaseOrder(validatedData);
+      res.status(201).json(order);
+    } catch (error) {
+      console.error("Error creating purchase order:", error);
+      res.status(500).json({ error: "Failed to create purchase order" });
+    }
+  });
+
+  app.put("/api/purchase-orders/:id", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertPurchaseOrderSchema.partial().parse(req.body);
+      
+      const order = await storage.updatePurchaseOrder(id, validatedData);
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating purchase order:", error);
+      res.status(500).json({ error: "Failed to update purchase order" });
+    }
+  });
+
+  app.patch("/api/purchase-orders/:id/status", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { status, reason, notes } = req.body;
+      const userId = req.user?.claims?.sub;
+
+      const order = await storage.updatePurchaseOrderStatus(id, status, userId, reason, notes);
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating purchase order status:", error);
+      res.status(500).json({ error: "Failed to update purchase order status" });
+    }
+  });
+
+  app.post("/api/purchase-orders/:id/items", isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertPurchaseOrderItemSchema.parse({
+        ...req.body,
+        purchaseOrderId: id
+      });
+
+      const item = await storage.addPurchaseOrderItem(validatedData);
+      res.status(201).json(item);
+    } catch (error) {
+      console.error("Error adding purchase order item:", error);
+      res.status(500).json({ error: "Failed to add purchase order item" });
+    }
+  });
+
+  app.post("/api/purchase-orders/:id/documents", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.claims?.sub;
+      const validatedData = insertPoDocumentSchema.parse({
+        ...req.body,
+        purchaseOrderId: id,
+        uploadedBy: userId
+      });
+
+      const document = await storage.addDocument(validatedData);
+      res.status(201).json(document);
+    } catch (error) {
+      console.error("Error adding purchase order document:", error);
+      res.status(500).json({ error: "Failed to add purchase order document" });
+    }
+  });
+
+  app.get("/api/purchase-orders/generate-po-number", isAuthenticated, async (req, res) => {
+    try {
+      const poNumber = await storage.generatePONumber();
+      res.json({ poNumber });
+    } catch (error) {
+      console.error("Error generating PO number:", error);
+      res.status(500).json({ error: "Failed to generate PO number" });
     }
   });
 

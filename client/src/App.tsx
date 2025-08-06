@@ -12,6 +12,7 @@ import GlobalDistributors from "@/pages/GlobalDistributors";
 import BusinessIntelligence from "@/pages/BusinessIntelligence";
 import BrandDetail from "@/pages/BrandDetail";
 import RouteManagement from "@/pages/RouteManagement";
+import PurchaseOrders from "@/pages/PurchaseOrders";
 import FactorySetup from "@/pages/FactorySetup";
 import ExtendedAutomation from "@/pages/ExtendedAutomation";
 import ExcelUpload from "@/pages/ExcelUpload";
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/distributors" component={GlobalDistributors} />
       <Route path="/analytics" component={BusinessIntelligence} />
       <Route path="/routes" component={RouteManagement} />
+      <Route path="/purchase-orders" component={PurchaseOrders} />
       <Route path="/factory-setup" component={FactorySetup} />
       <Route path="/automation" component={ExtendedAutomation} />
       <Route path="/excel-upload" component={ExcelUpload} />

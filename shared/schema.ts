@@ -628,3 +628,138 @@ export type HardwareStoreFromExcel = typeof hardwareStoresFromExcel.$inferSelect
 export type InsertHardwareStoreFromExcel = z.infer<typeof insertHardwareStoreFromExcelSchema>;
 export type SalesRepRouteFromExcel = typeof salesRepRoutesFromExcel.$inferSelect;
 export type InsertSalesRepRouteFromExcel = z.infer<typeof insertSalesRepRouteFromExcelSchema>;
+
+// Purchase Order System Tables
+export const purchaseOrders = pgTable("purchase_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  poNumber: varchar("po_number").notNull().unique(), // Auto-generated PO number
+  customerId: varchar("customer_id"), // Can reference distributors or be standalone
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  customerAddress: text("customer_address"),
+  customerCity: text("customer_city"),
+  customerRegion: text("customer_region"),
+  customerCountry: text("customer_country").notNull(),
+  
+  // Order details
+  orderDate: timestamp("order_date").defaultNow(),
+  requestedDeliveryDate: timestamp("requested_delivery_date"),
+  urgencyLevel: text("urgency_level").notNull().default("standard"), // urgent, high, standard, low
+  currency: text("currency").notNull().default("ZAR"),
+  
+  // Pricing
+  subtotal: decimal("subtotal", { precision: 12, scale: 2 }).notNull().default("0"),
+  taxAmount: decimal("tax_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  shippingCost: decimal("shipping_cost", { precision: 12, scale: 2 }).notNull().default("0"),
+  discountAmount: decimal("discount_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalAmount: decimal("total_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+  
+  // Status and workflow
+  status: text("status").notNull().default("pending"), // pending, approved, in_production, ready_to_ship, shipped, delivered, cancelled
+  approvedBy: varchar("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  notes: text("notes"),
+  internalNotes: text("internal_notes"), // Private notes for internal use
+  
+  // Tracking
+  assignedTo: varchar("assigned_to").references(() => users.id), // Sales rep or manager handling this PO
+  estimatedCompletionDate: timestamp("estimated_completion_date"),
+  actualCompletionDate: timestamp("actual_completion_date"),
+  
+  // Metadata
+  source: text("source").notNull().default("manual"), // manual, excel_upload, api, website
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const purchaseOrderItems = pgTable("purchase_order_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  purchaseOrderId: varchar("purchase_order_id").notNull().references(() => purchaseOrders.id, { onDelete: "cascade" }),
+  productId: varchar("product_id").notNull().references(() => products.id),
+  
+  // Item details
+  quantity: integer("quantity").notNull(),
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  lineTotal: decimal("line_total", { precision: 12, scale: 2 }).notNull(),
+  
+  // Production details
+  estimatedProductionTime: integer("estimated_production_time"), // in hours
+  actualProductionTime: integer("actual_production_time"), // in hours
+  productionStatus: text("production_status").default("not_started"), // not_started, in_progress, completed
+  
+  // Special requirements
+  customSpecifications: text("custom_specifications"),
+  packagingNotes: text("packaging_notes"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const poStatusHistory = pgTable("po_status_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  purchaseOrderId: varchar("purchase_order_id").notNull().references(() => purchaseOrders.id, { onDelete: "cascade" }),
+  previousStatus: text("previous_status"),
+  newStatus: text("new_status").notNull(),
+  changedBy: varchar("changed_by").references(() => users.id),
+  changeReason: text("change_reason"),
+  notes: text("notes"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const poDocuments = pgTable("po_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  purchaseOrderId: varchar("purchase_order_id").notNull().references(() => purchaseOrders.id, { onDelete: "cascade" }),
+  documentType: text("document_type").notNull(), // invoice, receipt, shipping_label, custom_specs
+  fileName: text("file_name").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileSize: integer("file_size"),
+  uploadedBy: varchar("uploaded_by").references(() => users.id),
+  uploadedAt: timestamp("uploaded_at").defaultNow(),
+});
+
+// Purchase Order Relations
+export const purchaseOrdersRelations = relations(purchaseOrders, ({ one, many }) => ({
+  items: many(purchaseOrderItems),
+  statusHistory: many(poStatusHistory),
+  documents: many(poDocuments),
+  approver: one(users, { fields: [purchaseOrders.approvedBy], references: [users.id] }),
+  assignee: one(users, { fields: [purchaseOrders.assignedTo], references: [users.id] }),
+  creator: one(users, { fields: [purchaseOrders.createdBy], references: [users.id] }),
+}));
+
+export const purchaseOrderItemsRelations = relations(purchaseOrderItems, ({ one }) => ({
+  purchaseOrder: one(purchaseOrders, { fields: [purchaseOrderItems.purchaseOrderId], references: [purchaseOrders.id] }),
+  product: one(products, { fields: [purchaseOrderItems.productId], references: [products.id] }),
+}));
+
+export const poStatusHistoryRelations = relations(poStatusHistory, ({ one }) => ({
+  purchaseOrder: one(purchaseOrders, { fields: [poStatusHistory.purchaseOrderId], references: [purchaseOrders.id] }),
+  changedBy: one(users, { fields: [poStatusHistory.changedBy], references: [users.id] }),
+}));
+
+export const poDocumentsRelations = relations(poDocuments, ({ one }) => ({
+  purchaseOrder: one(purchaseOrders, { fields: [poDocuments.purchaseOrderId], references: [purchaseOrders.id] }),
+  uploadedBy: one(users, { fields: [poDocuments.uploadedBy], references: [users.id] }),
+}));
+
+// Purchase Order Zod Schemas
+export const insertPurchaseOrderSchema = createInsertSchema(purchaseOrders).extend({
+  orderDate: z.coerce.date().optional(),
+  requestedDeliveryDate: z.coerce.date().optional(),
+  estimatedCompletionDate: z.coerce.date().optional(),
+  actualCompletionDate: z.coerce.date().optional(),
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+export const insertPurchaseOrderItemSchema = createInsertSchema(purchaseOrderItems).omit({ id: true, createdAt: true });
+export const insertPoStatusHistorySchema = createInsertSchema(poStatusHistory).omit({ id: true, timestamp: true });
+export const insertPoDocumentSchema = createInsertSchema(poDocuments).omit({ id: true, uploadedAt: true });
+
+export type InsertPurchaseOrder = z.infer<typeof insertPurchaseOrderSchema>;
+export type PurchaseOrder = typeof purchaseOrders.$inferSelect;
+export type InsertPurchaseOrderItem = typeof purchaseOrderItems.$inferInsert;
+export type PurchaseOrderItem = typeof purchaseOrderItems.$inferSelect;
+export type InsertPoStatusHistory = typeof poStatusHistory.$inferInsert;
+export type PoStatusHistory = typeof poStatusHistory.$inferSelect;
+export type InsertPoDocument = typeof poDocuments.$inferInsert;
+export type PoDocument = typeof poDocuments.$inferSelect;
