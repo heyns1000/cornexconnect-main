@@ -166,7 +166,7 @@ export default function PurchaseOrders() {
   if (ordersLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-300 rounded-lg w-64"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -182,7 +182,7 @@ export default function PurchaseOrders() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-blue-50 to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

@@ -134,7 +134,7 @@ export default function ExtendedAutomation() {
   const successRate = automationEvents.length > 0 ? (successfulEvents / automationEvents.length) * 100 : 0;
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="w-full p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

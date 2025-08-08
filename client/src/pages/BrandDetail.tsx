@@ -110,7 +110,7 @@ export default function BrandDetail() {
   
   if (!brand || !content) {
     return (
-      <div className="container mx-auto px-6 py-12">
+      <div className="w-full px-6 py-12">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Brand Not Found</h1>
           <Link href="/">
@@ -132,7 +132,7 @@ export default function BrandDetail() {
   };
 
   return (
-    <div className="container mx-auto px-6 py-8">
+    <div className="w-full px-6 py-8">
       {/* Header */}
       <div className="flex items-center mb-8">
         <Link href="/">
