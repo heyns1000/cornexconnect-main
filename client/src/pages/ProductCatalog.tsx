@@ -5,16 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ProductTable from "@/components/ProductTable";
+import { Product } from "@shared/schema";
 
 export default function ProductCatalog() {
-  const { data: products } = useQuery({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
   const productCategories = [
     {
       name: "EPS Premium Range",
-      count: products?.filter((p: any) => p.category === "EPS").length || 13,
+      count: products.filter((p: any) => p.category === "EPS").length || 13,
       description: "Standard density polystyrene cornices for cost-effective installations",
       sizeRange: "55mm - 175mm",
       priceRange: "R 8.63 - R 18.58",
@@ -22,7 +23,7 @@ export default function ProductCatalog() {
     },
     {
       name: "BR XPS Budget Range", 
-      count: products?.filter((p: any) => p.category === "BR").length || 13,
+      count: products.filter((p: any) => p.category === "BR").length || 13,
       description: "High-density XPS cornices for professional installations",
       sizeRange: "55mm - 170mm", 
       priceRange: "R 6.90 - R 21.50",
@@ -30,7 +31,7 @@ export default function ProductCatalog() {
     },
     {
       name: "LED Ready Series",
-      count: products?.filter((p: any) => p.category === "LED").length || 8,
+      count: products.filter((p: any) => p.category === "LED").length || 8,
       description: "Specialized cornices with integrated LED lighting channels",
       sizeRange: "40mm - 145mm",
       priceRange: "R 15.90 - R 32.75", 
@@ -39,7 +40,8 @@ export default function ProductCatalog() {
   ];
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="w-full min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="w-full space-y-8 p-8">
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-6 -mx-8 -mt-8 mb-8">
         <div className="flex items-center justify-between">
@@ -102,6 +104,7 @@ export default function ProductCatalog() {
           <ProductTable />
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
