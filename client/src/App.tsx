@@ -34,9 +34,12 @@ import { useState } from "react";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  
+  // Demo mode for Homemart Africa - bypass authentication
+  const isDemoMode = window.location.hostname.includes('replit.dev') || true;
 
   // Show loading while checking authentication (only briefly)
-  if (isLoading) {
+  if (isLoading && !isDemoMode) {
     return (
       <LoadingTransition isLoading={true}>
         <div />
@@ -44,8 +47,8 @@ function Router() {
     );
   }
 
-  // Show public pages for unauthenticated users
-  if (!isAuthenticated) {
+  // Show public pages for unauthenticated users (only if not demo mode)
+  if (!isAuthenticated && !isDemoMode) {
     return (
       <PageTransition>
         <Switch>
@@ -58,29 +61,37 @@ function Router() {
     );
   }
 
-  // Show authenticated app with page transitions
+  // Show authenticated app with sidebar and smooth transitions
   return (
-    <PageTransition>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/catalog" component={ProductCatalog} />
-        <Route path="/production" component={ProductionPlanning} />
-        <Route path="/inventory" component={InventoryAI} />
-        <Route path="/distributors" component={GlobalDistributors} />
-        <Route path="/analytics" component={BusinessIntelligence} />
-        <Route path="/routes" component={RouteManagement} />
-        <Route path="/purchase-orders" component={PurchaseOrders} />
-        <Route path="/factory-setup" component={FactorySetup} />
-        <Route path="/automation" component={ExtendedAutomation} />
-        <Route path="/excel-upload" component={ExcelUpload} />
-        <Route path="/bulk-import" component={BulkImport} />
-        <Route path="/hardware-stores" component={HardwareStores} />
-        <Route path="/logistics" component={LogisticsIntegration} />
-        <Route path="/company-management" component={CompanyManagement} />
-        <Route path="/company-settings" component={CompanySettings} />
-        <Route path="/brands/:id" component={BrandDetail} />
-      </Switch>
-    </PageTransition>
+    <div className="flex h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
+      <Sidebar />
+      <div className="flex-1 overflow-auto">
+        <PageTransition>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/catalog" component={ProductCatalog} />
+            <Route path="/production" component={ProductionPlanning} />
+            <Route path="/inventory" component={InventoryAI} />
+            <Route path="/distributors" component={GlobalDistributors} />
+            <Route path="/analytics" component={BusinessIntelligence} />
+            <Route path="/routes" component={RouteManagement} />
+            <Route path="/purchase-orders" component={PurchaseOrders} />
+            <Route path="/factory-setup" component={FactorySetup} />
+            <Route path="/automation" component={ExtendedAutomation} />
+            <Route path="/excel-upload" component={ExcelUpload} />
+            <Route path="/bulk-import" component={BulkImport} />
+            <Route path="/hardware-stores" component={HardwareStores} />
+            <Route path="/logistics" component={LogisticsIntegration} />
+            <Route path="/company-management" component={CompanyManagement} />
+            <Route path="/company-settings" component={CompanySettings} />
+            <Route path="/brands/:id" component={BrandDetail} />
+          </Switch>
+        </PageTransition>
+      </div>
+      
+      {/* Floating chatbot for demo */}
+      <FruitfulAssistFloatingButton onClick={() => {}} isOpen={false} />
+    </div>
   );
 }
 
