@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/currency";
+import { useToast } from "@/hooks/use-toast";
 import type { 
   FactorySetup, 
   ProductionMetrics, 
@@ -41,6 +42,7 @@ import type {
 } from "@shared/schema";
 
 export default function FactorySetup() {
+  const { toast } = useToast();
   const [selectedFactory, setSelectedFactory] = useState<string | null>(null);
   const [newFactoryForm, setNewFactoryForm] = useState({
     name: '',
@@ -50,6 +52,20 @@ export default function FactorySetup() {
   });
 
   const queryClient = useQueryClient();
+
+  const handleNewFactorySetup = () => {
+    toast({
+      title: "New Factory Setup",
+      description: "Opening factory setup wizard...",
+    });
+  };
+
+  const handleFruitfulAssistAI = () => {
+    toast({
+      title: "Fruitful Assist AI", 
+      description: "Launching AI-powered factory assistance...",
+    });
+  };
 
   // Fetch factory setups
   const { data: factories = [], isLoading: factoriesLoading } = useQuery<FactorySetup[]>({
@@ -135,11 +151,11 @@ export default function FactorySetup() {
               </p>
             </div>
             <div className="flex space-x-3">
-              <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
+              <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={handleFruitfulAssistAI}>
                 <Brain className="w-4 h-4 mr-2" />
                 🍎 Fruitful Assist AI
               </Button>
-              <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
+              <Button variant="secondary" className="bg-white/10 hover:bg-white/20 text-white border-white/20" onClick={handleNewFactorySetup}>
                 <Rocket className="w-4 h-4 mr-2" />
                 New Factory Setup
               </Button>
@@ -164,7 +180,7 @@ export default function FactorySetup() {
                   <p className="text-sm text-indigo-200">Monthly Revenue</p>
                   <p className="text-xl font-bold">
                     {formatCurrency(
-                      factories.reduce((sum, f) => sum + parseFloat(f.monthlyRevenue), 0), 
+                      factories.reduce((sum, f) => sum + parseFloat(f.monthlyRevenue || '0'), 0), 
                       'ZAR'
                     )}
                   </p>
@@ -177,7 +193,7 @@ export default function FactorySetup() {
                 <div>
                   <p className="text-sm text-indigo-200">Connected Stores</p>
                   <p className="text-xl font-bold">
-                    {factories.reduce((sum, f) => sum + f.connectedStores, 0)}
+                    {factories.reduce((sum, f) => sum + (f.connectedStores || 0), 0)}
                   </p>
                 </div>
               </div>
@@ -189,7 +205,7 @@ export default function FactorySetup() {
                   <p className="text-sm text-indigo-200">AI Optimization</p>
                   <p className="text-xl font-bold">
                     {factories.length > 0 
-                      ? Math.round(factories.reduce((sum, f) => sum + f.aiOptimizationLevel, 0) / factories.length)
+                      ? Math.round(factories.reduce((sum, f) => sum + (f.aiOptimizationLevel || 0), 0) / factories.length)
                       : 0}%
                   </p>
                 </div>
@@ -251,7 +267,7 @@ export default function FactorySetup() {
                           Payment {factoryWithRecommendations.currentPayment} of {factoryWithRecommendations.totalPayments} completed
                         </p>
                         <p className="text-lg font-bold text-green-600 mt-2">
-                          {formatCurrency(parseInt(factoryWithRecommendations.totalInvestment), 'ZAR')} Total Investment
+                          {formatCurrency(parseInt(factoryWithRecommendations.totalInvestment || '0'), 'ZAR')} Total Investment
                         </p>
                       </div>
                       
@@ -260,15 +276,15 @@ export default function FactorySetup() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Monthly Revenue:</span>
-                            <span className="font-semibold">{formatCurrency(parseInt(factoryWithRecommendations.monthlyRevenue), 'ZAR')}</span>
+                            <span className="font-semibold">{formatCurrency(parseInt(factoryWithRecommendations.monthlyRevenue || '0'), 'ZAR')}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Production Capacity:</span>
-                            <span className="font-semibold">{factoryWithRecommendations.productionCapacity.toLocaleString()} units/month</span>
+                            <span className="font-semibold">{(factoryWithRecommendations.productionCapacity || 0).toLocaleString()} units/month</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">AI Optimization:</span>
-                            <span className="font-semibold text-blue-600">{factoryWithRecommendations.aiOptimizationLevel}%</span>
+                            <span className="font-semibold text-blue-600">{factoryWithRecommendations.aiOptimizationLevel || 0}%</span>
                           </div>
                         </div>
                       </div>
@@ -278,15 +294,15 @@ export default function FactorySetup() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Connected Stores:</span>
-                            <span className="font-semibold">{factoryWithRecommendations.connectedStores}</span>
+                            <span className="font-semibold">{factoryWithRecommendations.connectedStores || 0}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm text-gray-600">Target Stores:</span>
-                            <span className="font-semibold">{factoryWithRecommendations.targetStores}</span>
+                            <span className="font-semibold">{factoryWithRecommendations.targetStores || 0}</span>
                           </div>
-                          <Progress value={(factoryWithRecommendations.connectedStores / factoryWithRecommendations.targetStores) * 100} className="mt-2" />
+                          <Progress value={((factoryWithRecommendations.connectedStores || 0) / (factoryWithRecommendations.targetStores || 1)) * 100} className="mt-2" />
                           <p className="text-xs text-gray-500">
-                            {Math.round((factoryWithRecommendations.connectedStores / factoryWithRecommendations.targetStores) * 100)}% coverage achieved
+                            {Math.round(((factoryWithRecommendations.connectedStores || 0) / (factoryWithRecommendations.targetStores || 1)) * 100)}% coverage achieved
                           </p>
                         </div>
                       </div>

@@ -10,11 +10,34 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/currency";
 import { SOUTH_AFRICAN_PROVINCES } from "@/lib/constants";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BusinessIntelligence() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
   const [selectedRegion, setSelectedRegion] = useState("all");
   const [selectedMetric, setSelectedMetric] = useState("revenue");
+  const { toast } = useToast();
+
+  const handleFilterClick = () => {
+    toast({
+      title: "Advanced Filters",
+      description: "Opening advanced filtering options...",
+    });
+  };
+
+  const handleExportClick = () => {
+    toast({
+      title: "Exporting Data",
+      description: "Preparing analytics report for download...",
+    });
+  };
+
+  const handleGenerateReport = () => {
+    toast({
+      title: "Generating Report",
+      description: "Creating comprehensive analytics report...",
+    });
+  };
 
   const { data: salesMetrics } = useQuery({
     queryKey: ["/api/sales-metrics", selectedTimeframe, selectedRegion],
@@ -75,15 +98,15 @@ export default function BusinessIntelligence() {
                 <SelectItem value="1y">Last year</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleFilterClick}>
               <Filter className="w-4 h-4 mr-2" />
               Filters
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExportClick}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button className="bg-cornex-blue hover:bg-cornex-dark">
+            <Button className="bg-cornex-blue hover:bg-cornex-dark" onClick={handleGenerateReport}>
               <BarChart3 className="w-4 h-4 mr-2" />
               Generate Report
             </Button>

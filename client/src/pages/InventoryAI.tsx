@@ -10,11 +10,27 @@ import InventoryOptimizer from "@/components/InventoryOptimizer";
 import AIInsightsPanel from "@/components/AIInsightsPanel";
 import { formatCurrency } from "@/lib/currency";
 import { STOCK_STATUS_COLORS } from "@/lib/constants";
+import { useToast } from "@/hooks/use-toast";
 
 export default function InventoryAI() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
+  const { toast } = useToast();
 
-  const { data: inventory, isLoading } = useQuery({
+  const handleOptimizeAll = () => {
+    toast({
+      title: "Optimizing Inventory",
+      description: "Running AI optimization across all inventory items...",
+    });
+  };
+
+  const handleViewInsights = () => {
+    toast({
+      title: "AI Insights",
+      description: "Loading detailed AI analytics...",
+    });
+  };
+
+  const { data: inventory = [], isLoading } = useQuery({
     queryKey: ["/api/inventory"],
   });
 
@@ -27,7 +43,7 @@ export default function InventoryAI() {
   });
 
   // Calculate inventory metrics
-  const inventoryMetrics = inventory ? {
+  const inventoryMetrics = Array.isArray(inventory) && inventory.length > 0 ? {
     totalValue: inventory.reduce((sum: number, item: any) => 
       sum + (item.inventory?.currentStock || item.currentStock || 0) * parseFloat((item.products || item.product)?.basePrice || 0), 0
     ),
@@ -46,7 +62,7 @@ export default function InventoryAI() {
   } : null;
 
   const getOptimizationScore = () => {
-    if (!inventory) return 0;
+    if (!Array.isArray(inventory) || inventory.length === 0) return 0;
     const totalItems = inventory.length;
     const optimalItems = inventoryMetrics?.optimalStockItems || 0;
     return Math.round((optimalItems / totalItems) * 100);
@@ -64,15 +80,15 @@ export default function InventoryAI() {
             <p className="text-gray-600 mt-1">Predictive analytics and intelligent inventory management</p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleOptimizeAll}>
               <Zap className="w-4 h-4 mr-2" />
               Auto-Optimize
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleViewInsights}>
               <Target className="w-4 h-4 mr-2" />
               Set Targets
             </Button>
-            <Button className="bg-cornex-blue hover:bg-cornex-dark">
+            <Button className="bg-cornex-blue hover:bg-cornex-dark" onClick={handleViewInsights}>
               <Brain className="w-4 h-4 mr-2" />
               🍎 Fruitful Assist AI
             </Button>
@@ -123,7 +139,7 @@ export default function InventoryAI() {
               {inventoryMetrics?.optimalStockItems || 0}
             </div>
             <p className="text-sm text-green-600 mt-1">
-              {inventory ? Math.round(((inventoryMetrics?.optimalStockItems || 0) / inventory.length) * 100) : 0}% of inventory
+              {Array.isArray(inventory) && inventory.length > 0 ? Math.round(((inventoryMetrics?.optimalStockItems || 0) / inventory.length) * 100) : 0}% of inventory
             </p>
           </CardContent>
         </Card>

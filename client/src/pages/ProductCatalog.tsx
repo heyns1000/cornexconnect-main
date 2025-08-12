@@ -4,17 +4,37 @@ import { Plus, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import ProductTable from "@/components/ProductTable";
 
 export default function ProductCatalog() {
-  const { data: products } = useQuery({
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  
+  const { data: products = [] } = useQuery({
     queryKey: ["/api/products"],
   });
+
+  const handleImportProducts = () => {
+    setLocation("/excel-upload");
+    toast({
+      title: "Redirecting to Import",
+      description: "Opening product import interface...",
+    });
+  };
+
+  const handleAddProduct = () => {
+    toast({
+      title: "Add Product",
+      description: "Product creation form will open here",
+    });
+  };
 
   const productCategories = [
     {
       name: "EPS Premium Range",
-      count: products?.filter((p: any) => p.category === "EPS").length || 13,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "EPS").length : 13,
       description: "Standard density polystyrene cornices for cost-effective installations",
       sizeRange: "55mm - 175mm",
       priceRange: "R 8.63 - R 18.58",
@@ -22,7 +42,7 @@ export default function ProductCatalog() {
     },
     {
       name: "BR XPS Budget Range", 
-      count: products?.filter((p: any) => p.category === "BR").length || 13,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "BR").length : 13,
       description: "High-density XPS cornices for professional installations",
       sizeRange: "55mm - 170mm", 
       priceRange: "R 6.90 - R 21.50",
@@ -30,7 +50,7 @@ export default function ProductCatalog() {
     },
     {
       name: "LED Ready Series",
-      count: products?.filter((p: any) => p.category === "LED").length || 8,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "LED").length : 8,
       description: "Specialized cornices with integrated LED lighting channels",
       sizeRange: "40mm - 145mm",
       priceRange: "R 15.90 - R 32.75", 
@@ -48,11 +68,11 @@ export default function ProductCatalog() {
             <p className="text-gray-600 mt-1">Complete EPS and BR XPS product range with real-time inventory</p>
           </div>
           <div className="flex items-center space-x-3">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleImportProducts}>
               <Package className="w-4 h-4 mr-2" />
               Import Products
             </Button>
-            <Button className="bg-cornex-blue hover:bg-cornex-dark">
+            <Button className="bg-cornex-blue hover:bg-cornex-dark" onClick={handleAddProduct}>
               <Plus className="w-4 h-4 mr-2" />
               Add Product
             </Button>

@@ -21,6 +21,7 @@ import {
   User,
   Clock
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuditLog {
   id: string;
@@ -37,6 +38,8 @@ interface AuditLog {
 }
 
 export default function AuditTrail() {
+  const { toast } = useToast();
+  
   const [filters, setFilters] = useState({
     action: '',
     user: '',
@@ -44,6 +47,29 @@ export default function AuditTrail() {
     dateFrom: null as Date | null,
     dateTo: null as Date | null,
   });
+
+  // Removed duplicate - using the comprehensive exportToCSV function below
+
+  const applyFilters = () => {
+    toast({
+      title: "Applying Filters",
+      description: "Filtering audit logs based on selected criteria...",
+    });
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      action: '',
+      user: '',
+      resource: '',
+      dateFrom: null,
+      dateTo: null,
+    });
+    toast({
+      title: "Filters Cleared",
+      description: "All filters have been reset.",
+    });
+  };
 
   const { data: auditLogs = [], isLoading } = useQuery<AuditLog[]>({
     queryKey: ["/api/audit-logs", filters],
@@ -86,7 +112,12 @@ export default function AuditTrail() {
     }
   };
 
-  const exportAuditLogs = () => {
+  const exportToCSV = () => {
+    toast({
+      title: "Exporting Audit Logs",
+      description: "Preparing audit trail export for download...",
+    });
+    
     // Implement CSV export functionality
     const csvContent = "data:text/csv;charset=utf-8," 
       + "Timestamp,User,Action,Resource,Details,IP Address\n"
@@ -167,7 +198,7 @@ export default function AuditTrail() {
               <h1 className="text-3xl font-bold text-gray-900">Audit Trail</h1>
               <p className="text-gray-600 mt-2">Monitor all user activities and system changes</p>
             </div>
-            <Button onClick={exportAuditLogs} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={exportToCSV} className="bg-emerald-600 hover:bg-emerald-700">
               <Download className="h-4 w-4 mr-2" />
               Export Logs
             </Button>
