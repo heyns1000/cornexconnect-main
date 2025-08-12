@@ -44,6 +44,8 @@ export default function BulkImport() {
   const [currentSession, setCurrentSession] = useState<ImportSession | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [activeTab, setActiveTab] = useState("upload");
+  const [selectedSessionDetails, setSelectedSessionDetails] = useState<ImportSession | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   // Fetch import history
   const { data: importHistory = [] } = useQuery<ImportSession[]>({
@@ -157,6 +159,59 @@ export default function BulkImport() {
     setCurrentSession(null);
   };
 
+  const viewSessionDetails = (session: ImportSession) => {
+    setSelectedSessionDetails(session);
+    setShowDetailsDialog(true);
+  };
+
+  const exportSessionReport = (session: ImportSession) => {
+    // Create CSV report data
+    const csvData = [
+      ['Import Session Report'],
+      ['Session ID:', session.id],
+      ['Session Name:', session.name],
+      ['Created:', new Date(session.createdAt).toLocaleString()],
+      ['Status:', session.status],
+      ['Total Files:', session.totalFiles.toString()],
+      ['Processed Files:', session.processedFiles.toString()],
+      [''],
+      ['File Details:'],
+      ['File Name', 'Status', 'Progress', 'Total Rows', 'Valid Rows', 'Errors']
+    ];
+
+    session.files.forEach(file => {
+      csvData.push([
+        file.fileName || 'Unknown',
+        file.status,
+        `${file.progress}%`,
+        file.result?.totalRows?.toString() || '0',
+        file.result?.validRows?.toString() || '0',
+        file.result?.errors?.length?.toString() || '0'
+      ]);
+    });
+
+    // Convert to CSV string
+    const csvContent = csvData.map(row => 
+      row.map(field => `"${field}"`).join(',')
+    ).join('\n');
+
+    // Download CSV file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `import-report-${session.id}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Report Exported",
+      description: `Downloaded report for session: ${session.name}`,
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed": return "bg-green-500";
@@ -203,10 +258,11 @@ export default function BulkImport() {
           )}
         </div>
 
-        <Tabs defaultValue="upload" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="upload" className="space-y-6" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="upload">File Upload</TabsTrigger>
             <TabsTrigger value="progress">Import Progress</TabsTrigger>
+            <TabsTrigger value="details">Import Details</TabsTrigger>
             <TabsTrigger value="history">Import History</TabsTrigger>
           </TabsList>
 
@@ -361,6 +417,137 @@ export default function BulkImport() {
             )}
           </TabsContent>
 
+          {/* Import Details Tab */}
+          <TabsContent value="details" className="space-y-6">
+            {currentSession ? (
+              <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>Current Import Details</span>
+                    <Badge 
+                      variant={currentSession.status === "completed" ? "default" : "secondary"}
+                      className={getStatusColor(currentSession.status)}
+                    >
+                      {currentSession.status}
+                    </Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Detailed breakdown of the current import session
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Session Summary */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <Card className="backdrop-blur-sm bg-white/5 border border-white/10">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-blue-600">{currentSession.totalFiles}</div>
+                        <div className="text-sm text-muted-foreground">Total Files</div>
+                      </CardContent>
+                    </Card>
+                    <Card className="backdrop-blur-sm bg-white/5 border border-white/10">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-green-600">{currentSession.processedFiles}</div>
+                        <div className="text-sm text-muted-foreground">Processed</div>
+                      </CardContent>
+                    </Card>
+                    <Card className="backdrop-blur-sm bg-white/5 border border-white/10">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {currentSession.files.reduce((sum, file) => sum + (file.result?.validRows || 0), 0)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Imported Records</div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* File Processing Details */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">File Processing Details</h3>
+                    <ScrollArea className="h-96">
+                      <div className="space-y-3">
+                        {currentSession.files.map((file, index) => (
+                          <Card key={file.id || index} className="backdrop-blur-sm bg-white/5 border border-white/10">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  {getStatusIcon(file.status)}
+                                  <span className="font-medium">{file.fileName || `File ${index + 1}`}</span>
+                                </div>
+                                <Badge variant="outline">{file.status}</Badge>
+                              </div>
+
+                              {file.progress > 0 && (
+                                <div className="mb-3">
+                                  <div className="flex justify-between text-sm mb-1">
+                                    <span>Progress</span>
+                                    <span>{file.progress}%</span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                      className="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300" 
+                                      style={{ width: `${file.progress}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {file.result && (
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-3 gap-4 text-sm">
+                                    <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                                      <div className="font-bold text-blue-600">{file.result.totalRows}</div>
+                                      <div className="text-xs text-muted-foreground">Total Rows</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                                      <div className="font-bold text-green-600">{file.result.validRows}</div>
+                                      <div className="text-xs text-muted-foreground">Valid Rows</div>
+                                    </div>
+                                    <div className="text-center p-2 bg-red-50 dark:bg-red-900/20 rounded">
+                                      <div className="font-bold text-red-600">{file.result.errors.length}</div>
+                                      <div className="text-xs text-muted-foreground">Errors</div>
+                                    </div>
+                                  </div>
+
+                                  {file.result.errors.length > 0 && (
+                                    <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                                      <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
+                                        Processing Errors ({file.result.errors.length}):
+                                      </p>
+                                      <ScrollArea className="h-24">
+                                        <ul className="text-sm text-red-600 dark:text-red-300 space-y-1">
+                                          {file.result.errors.map((error, errorIndex) => (
+                                            <li key={errorIndex} className="flex items-start gap-2">
+                                              <span className="text-red-500 mt-0.5">•</span>
+                                              <span>{error}</span>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      </ScrollArea>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
+                <CardContent className="flex items-center justify-center h-96">
+                  <div className="text-center">
+                    <FileSpreadsheet className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No active import session</p>
+                    <p className="text-sm text-muted-foreground mt-2">Start an import to view detailed progress</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
           {/* History Tab */}
           <TabsContent value="history" className="space-y-6">
             <div className="grid gap-4">
@@ -389,11 +576,19 @@ export default function BulkImport() {
                           {session.processedFiles}/{session.totalFiles} files processed
                         </span>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => viewSessionDetails(session)}
+                          >
                             <Eye className="w-4 h-4 mr-2" />
                             View Details
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => exportSessionReport(session)}
+                          >
                             <Download className="w-4 h-4 mr-2" />
                             Export Report
                           </Button>
@@ -466,6 +661,129 @@ export default function BulkImport() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Details Dialog */}
+        {showDetailsDialog && selectedSessionDetails && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold">Import Session Details</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowDetailsDialog(false)}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="grid grid-cols-2 gap-6 mb-6">
+                  <div>
+                    <h3 className="font-semibold mb-2">Session Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="font-medium">ID:</span> {selectedSessionDetails.id}</p>
+                      <p><span className="font-medium">Name:</span> {selectedSessionDetails.name}</p>
+                      <p><span className="font-medium">Created:</span> {new Date(selectedSessionDetails.createdAt).toLocaleString()}</p>
+                      <p><span className="font-medium">Status:</span> 
+                        <Badge className={`ml-2 ${getStatusColor(selectedSessionDetails.status)}`}>
+                          {selectedSessionDetails.status}
+                        </Badge>
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-2">Processing Summary</h3>
+                    <div className="space-y-2 text-sm">
+                      <p><span className="font-medium">Total Files:</span> {selectedSessionDetails.totalFiles}</p>
+                      <p><span className="font-medium">Processed:</span> {selectedSessionDetails.processedFiles}</p>
+                      <p><span className="font-medium">Success Rate:</span> {Math.round((selectedSessionDetails.processedFiles / selectedSessionDetails.totalFiles) * 100)}%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-4">File Details</h3>
+                  <div className="space-y-3">
+                    {selectedSessionDetails.files.map((file, index) => (
+                      <div key={file.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium">{file.fileName || `File ${index + 1}`}</span>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(file.status)}
+                            <Badge variant="outline">{file.status}</Badge>
+                          </div>
+                        </div>
+                        
+                        {file.progress > 0 && (
+                          <div className="mb-2">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span>Progress</span>
+                              <span>{file.progress}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-blue-600 h-2 rounded-full" 
+                                style={{ width: `${file.progress}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {file.result && (
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">Total Rows:</span> {file.result.totalRows}
+                            </div>
+                            <div>
+                              <span className="font-medium">Valid Rows:</span> {file.result.validRows}
+                            </div>
+                            <div>
+                              <span className="font-medium">Errors:</span> 
+                              <span className={file.result.errors.length > 0 ? "text-red-500 ml-1" : "ml-1"}>
+                                {file.result.errors.length}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {file.result?.errors && file.result.errors.length > 0 && (
+                          <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
+                            <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">Errors:</p>
+                            <ul className="text-sm text-red-600 dark:text-red-300 list-disc list-inside">
+                              {file.result.errors.slice(0, 3).map((error, errorIndex) => (
+                                <li key={errorIndex}>{error}</li>
+                              ))}
+                              {file.result.errors.length > 3 && (
+                                <li>...and {file.result.errors.length - 3} more errors</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => exportSessionReport(selectedSessionDetails)}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Report
+                </Button>
+                <Button onClick={() => setShowDetailsDialog(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </PageTransition>
   );

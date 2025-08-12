@@ -1753,6 +1753,23 @@ const addBulkImportRoutes = (app: Express) => {
       res.status(500).json({ error: "Failed to fetch import history" });
     }
   });
+
+  // Get detailed session information
+  app.get("/api/bulk-import/session/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const session = importSessions.get(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      res.json(session);
+    } catch (error) {
+      console.error("Session fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch session details" });
+    }
+  });
 };
 
 // Async file processing function
