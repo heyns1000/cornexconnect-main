@@ -101,6 +101,9 @@ export default function BulkImport() {
     const interval = setInterval(async () => {
       try {
         const response = await fetch(`/api/bulk-import/status/${sessionId}`);
+        if (!response.ok) {
+          throw new Error('Session not found');
+        }
         const data = await response.json();
         
         setImportFiles(prev => prev.map(file => {
@@ -118,6 +121,33 @@ export default function BulkImport() {
         clearInterval(interval);
       }
     }, 2000);
+  };
+
+  // Clear all files
+  const clearAll = async () => {
+    try {
+      await apiRequest("/api/bulk-import/clear", { method: "POST" });
+      setImportFiles([]);
+      setCurrentSession(null);
+      toast({
+        title: "Files Cleared",
+        description: "All files have been cleared from the import queue.",
+      });
+    } catch (error) {
+      toast({
+        title: "Clear Failed",
+        description: "Failed to clear files. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Start import process
+  const startImport = () => {
+    if (importFiles.length > 0) {
+      const files = importFiles.map(f => f.file);
+      processFilesMutation.mutate(files);
+    }
   };
 
   // Handle file drop
@@ -149,12 +179,7 @@ export default function BulkImport() {
     setImportFiles(prev => prev.filter(f => f.id !== fileId));
   };
 
-  const startImport = () => {
-    if (importFiles.length === 0) return;
-    processFilesMutation.mutate(importFiles.map(f => f.file));
-  };
-
-  const clearAll = () => {
+  const clearAllLocal = () => {
     setImportFiles([]);
     setCurrentSession(null);
   };

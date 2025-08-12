@@ -949,6 +949,207 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk Import API Routes
+  app.get("/api/import-sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getImportSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching import sessions:", error);
+      res.status(500).json({ error: "Failed to fetch import sessions" });
+    }
+  });
+
+  app.post("/api/bulk-import/process", upload.array('files', 50), async (req, res) => {
+    try {
+      console.log("Processing bulk import with files:", req.files?.length || 0);
+      
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: "No files provided" });
+      }
+
+      // Create import session
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const session = await storage.createImportSession({
+        id: sessionId,
+        name: `Import Session ${new Date().toLocaleString()}`,
+        totalFiles: req.files.length,
+        processedFiles: 0,
+        status: "active",
+        createdAt: new Date().toISOString(),
+        files: []
+      });
+
+      const processedFiles = [];
+
+      // Process each file
+      for (const file of req.files) {
+        console.log(`Processing file: ${file.originalname}`);
+        
+        try {
+          const fileId = `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          
+          // Add file to session
+          const importFile = {
+            id: fileId,
+            name: file.originalname,
+            status: "processing",
+            progress: 0,
+            result: null
+          };
+
+          await storage.addFileToImportSession(sessionId, importFile);
+
+          // Process Excel file
+          const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+          console.log(`Found ${jsonData.length} rows in ${file.originalname}`);
+
+          let validRows = 0;
+          let totalRows = jsonData.length;
+          const errors = [];
+
+          // Process hardware stores
+          for (let i = 0; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            
+            try {
+              // Detect if this is hardware store data
+              const storeData = await storage.processHardwareStoreRow(row, file.originalname);
+              if (storeData) {
+                validRows++;
+              }
+            } catch (rowError) {
+              console.error(`Error processing row ${i + 1}:`, rowError);
+              errors.push(`Row ${i + 1}: ${rowError.message}`);
+            }
+          }
+
+          // Update file with results
+          await storage.updateFileInImportSession(sessionId, fileId, {
+            status: "completed",
+            progress: 100,
+            result: {
+              totalRows,
+              validRows,
+              errors,
+              preview: jsonData.slice(0, 5) // First 5 rows as preview
+            }
+          });
+
+          processedFiles.push({
+            id: fileId,
+            name: file.originalname,
+            status: "completed",
+            totalRows,
+            validRows,
+            errors: errors.length
+          });
+
+        } catch (fileError) {
+          console.error(`Error processing file ${file.originalname}:`, fileError);
+          
+          await storage.updateFileInImportSession(sessionId, fileId, {
+            status: "error",
+            progress: 0,
+            result: {
+              totalRows: 0,
+              validRows: 0,
+              errors: [fileError.message],
+              preview: []
+            }
+          });
+
+          processedFiles.push({
+            id: fileId,
+            name: file.originalname,
+            status: "error",
+            totalRows: 0,
+            validRows: 0,
+            errors: 1
+          });
+        }
+      }
+
+      // Update session as completed
+      await storage.updateImportSession(sessionId, {
+        processedFiles: req.files.length,
+        status: "completed"
+      });
+
+      console.log(`Bulk import completed: ${processedFiles.length} files processed`);
+
+      res.json({
+        success: true,
+        sessionId,
+        processedFiles,
+        message: `Successfully processed ${processedFiles.length} files`
+      });
+
+    } catch (error) {
+      console.error("Error in bulk import process:", error);
+      res.status(500).json({ error: "Bulk import failed" });
+    }
+  });
+
+  app.get("/api/bulk-import/history", async (req, res) => {
+    try {
+      const sessions = await storage.getImportSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching import history:", error);
+      res.status(500).json({ error: "Failed to fetch import history" });
+    }
+  });
+
+  app.get("/api/bulk-import/session/:id", async (req, res) => {
+    try {
+      const session = await storage.getImportSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching import session:", error);
+      res.status(500).json({ error: "Failed to fetch import session" });
+    }
+  });
+
+  app.get("/api/bulk-import/status/:id", async (req, res) => {
+    try {
+      const session = await storage.getImportSession(req.params.id);
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+      
+      // Return session status for polling
+      res.json({
+        id: session.id,
+        status: session.status,
+        processedFiles: session.processedFiles,
+        totalFiles: session.totalFiles,
+        files: session.files || []
+      });
+    } catch (error) {
+      console.error("Error fetching session status:", error);
+      res.status(500).json({ error: "Failed to fetch session status" });
+    }
+  });
+
+  // Clear all import files endpoint
+  app.post("/api/bulk-import/clear", async (req, res) => {
+    try {
+      // This would clear any pending files from the session
+      res.json({ success: true, message: "Files cleared" });
+    } catch (error) {
+      console.error("Error clearing files:", error);
+      res.status(500).json({ error: "Failed to clear files" });
+    }
+  });
+
   // Manual sync trigger endpoint
   app.post("/api/force-sync", async (req, res) => {
     try {

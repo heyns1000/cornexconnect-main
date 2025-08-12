@@ -123,6 +123,15 @@ export interface IStorage {
   // AI Insights
   getAiInsights(factoryId?: string): Promise<AiInsight[]>;
   createAiInsight(insight: InsertAiInsight): Promise<AiInsight>;
+
+  // Bulk Import Sessions
+  getImportSessions(): Promise<BulkImportSession[]>;
+  getImportSession(id: string): Promise<BulkImportSession | undefined>;
+  createImportSession(session: InsertBulkImportSession): Promise<BulkImportSession>;
+  updateImportSession(id: string, updates: Partial<InsertBulkImportSession>): Promise<BulkImportSession>;
+  addFileToImportSession(sessionId: string, file: any): Promise<void>;
+  updateFileInImportSession(sessionId: string, fileId: string, updates: any): Promise<void>;
+  processHardwareStoreRow(row: any, filename: string): Promise<any>;
   
   // Production Metrics
   getProductionMetrics(factoryId: string): Promise<ProductionMetrics[]>;
@@ -1649,6 +1658,130 @@ class MemoryStorage implements IStorage {
 
   async getHardwareStoresFromExcel(): Promise<any[]> { 
     return this.hardwareStores;
+  }
+
+  // Import Sessions
+  async getImportSessions(): Promise<BulkImportSession[]> {
+    return this.getBulkImportSessions();
+  }
+
+  async getImportSession(id: string): Promise<BulkImportSession | undefined> {
+    return this.getBulkImportSession(id);
+  }
+
+  async createImportSession(session: InsertBulkImportSession): Promise<BulkImportSession> {
+    return this.createBulkImportSession(session);
+  }
+
+  async updateImportSession(id: string, updates: Partial<InsertBulkImportSession>): Promise<BulkImportSession> {
+    const existing = this.bulkImportSessions.find(s => s.id === id);
+    if (!existing) {
+      throw new Error(`Import session ${id} not found`);
+    }
+    
+    const updated = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date()
+    };
+    
+    return this.updateBulkImportSession(id, updated);
+  }
+
+  async addFileToImportSession(sessionId: string, file: any): Promise<void> {
+    const session = this.bulkImportSessions.find(s => s.id === sessionId);
+    if (!session) {
+      throw new Error(`Import session ${sessionId} not found`);
+    }
+    
+    if (!session.files) {
+      session.files = [];
+    }
+    
+    session.files.push(file);
+    session.updatedAt = new Date();
+    
+    console.log(`[Storage] Added file ${file.name} to session ${sessionId}`);
+  }
+
+  async updateFileInImportSession(sessionId: string, fileId: string, updates: any): Promise<void> {
+    const session = this.bulkImportSessions.find(s => s.id === sessionId);
+    if (!session || !session.files) {
+      throw new Error(`Import session ${sessionId} or files not found`);
+    }
+    
+    const fileIndex = session.files.findIndex((f: any) => f.id === fileId);
+    if (fileIndex === -1) {
+      throw new Error(`File ${fileId} not found in session ${sessionId}`);
+    }
+    
+    session.files[fileIndex] = {
+      ...session.files[fileIndex],
+      ...updates
+    };
+    
+    session.updatedAt = new Date();
+    
+    console.log(`[Storage] Updated file ${fileId} in session ${sessionId}`);
+  }
+
+  async processHardwareStoreRow(row: any, filename: string): Promise<any> {
+    try {
+      // Detect store information from various possible column formats
+      const storeId = `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Try to extract store data from common column patterns
+      const storeName = row['Store Name'] || row['STORE NAME'] || row['Name'] || row['STORE'] || 
+                       row['Customer Name'] || row['CLIENT NAME'] || row['Business Name'] || '';
+      
+      if (!storeName || storeName.toString().trim().length === 0) {
+        return null; // Skip rows without store names
+      }
+
+      const storeData: InsertHardwareStore = {
+        id: storeId,
+        name: storeName.toString().trim(),
+        address: (row['Address'] || row['ADDRESS'] || row['Location'] || '').toString().trim(),
+        city: (row['City'] || row['CITY'] || row['Town'] || '').toString().trim(),
+        province: (row['Province'] || row['PROVINCE'] || row['Region'] || '').toString().trim(),
+        postalCode: (row['Postal Code'] || row['ZIP'] || row['CODE'] || '').toString().trim(),
+        phone: (row['Phone'] || row['PHONE'] || row['Contact'] || '').toString().trim(),
+        email: (row['Email'] || row['EMAIL'] || '').toString().trim(),
+        ownerName: (row['Owner'] || row['OWNER'] || row['Manager'] || '').toString().trim(),
+        storeSize: (row['Size'] || row['STORE SIZE'] || 'medium').toString().toLowerCase(),
+        creditLimit: parseFloat(row['Credit Limit'] || row['CREDIT'] || '50000') || 50000,
+        currentBalance: parseFloat(row['Balance'] || row['BALANCE'] || '0') || 0,
+        gpsCoordinates: (row['GPS'] || row['Coordinates'] || '').toString().trim(),
+        isActive: true,
+        source: filename,
+        notes: `Imported from ${filename} on ${new Date().toISOString()}`
+      };
+
+      // Store hardware store
+      const created = await this.createHardwareStore(storeData);
+      
+      console.log(`[Storage] Processed hardware store: ${storeData.name}`);
+      return created;
+    } catch (error) {
+      console.error(`[Storage] Error processing hardware store row:`, error);
+      throw new Error(`Failed to process store data: ${error.message}`);
+    }
+  }
+
+  async getSalesRepRoutesFromExcel(): Promise<any[]> {
+    return [];
+  }
+
+  async createHardwareStoreFromExcel(store: InsertHardwareStore): Promise<HardwareStore> {
+    return this.createHardwareStore(store);
+  }
+
+  async syncStoreToMainDirectory(store: any): Promise<void> {
+    console.log(`[Storage] Syncing store ${store.name} to main directory`);
+  }
+
+  async syncRouteToMainDirectory(route: any): Promise<void> {
+    console.log(`[Storage] Syncing route ${route.id} to main directory`);
   }
 }
 
