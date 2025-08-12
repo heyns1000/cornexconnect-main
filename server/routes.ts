@@ -2416,15 +2416,20 @@ const addBulkImportRoutes = (app: Express) => {
 
 // Async file processing function
 const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]) => {
+  console.log(`[BULK IMPORT] Starting session ${sessionId} with ${files.length} files`);
+  
   let session = await storage.getBulkImportSession(sessionId);
-  if (!session) return;
+  if (!session) {
+    console.error(`[BULK IMPORT] Session ${sessionId} not found`);
+    return;
+  }
 
   try {
     let totalImported = 0;
     
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const fileId = `${sessionId}_${file.originalname}`;
+      console.log(`[BULK IMPORT] Processing file ${i + 1}/${files.length}: ${file.originalname}`);
       
       // Update file status to processing
       session.files[i].status = "processing";
@@ -2432,23 +2437,43 @@ const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]
       await storage.updateBulkImportSession(sessionId, session);
 
       try {
+        // Process the file
+        console.log(`[BULK IMPORT] Extracting data from ${file.originalname}`);
         const result = await processImportFile(file);
+        console.log(`[BULK IMPORT] Extracted ${result.extractedData.length} stores from ${file.originalname}`);
         
         // Update progress during processing
-        for (let progress = 10; progress <= 90; progress += 20) {
-          session.files[i].progress = progress;
-          await storage.updateBulkImportSession(sessionId, session);
-          await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing time
-        }
+        session.files[i].progress = 50;
+        await storage.updateBulkImportSession(sessionId, session);
 
         // Import hardware stores to storage
-        for (const storeData of result.extractedData) {
+        for (let j = 0; j < result.extractedData.length; j++) {
+          const storeData = result.extractedData[j];
           try {
-            await storage.createHardwareStore(storeData);
+            console.log(`[BULK IMPORT] Creating store: ${storeData.name || 'Unknown Store'}`);
+            
+            // Ensure required fields are present
+            const storeToCreate = {
+              id: storeData.id || `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              name: storeData.name || `Imported Store ${j + 1}`,
+              address: storeData.address || '',
+              contactPerson: storeData.contactPerson || '',
+              phone: storeData.phone || '',
+              email: storeData.email || null,
+              province: storeData.province || 'Unknown',
+              city: storeData.city || '',
+              creditLimit: storeData.creditLimit || '0.00',
+              storeType: storeData.storeType || 'hardware',
+              isActive: storeData.isActive !== false,
+              createdAt: new Date()
+            };
+
+            const createdStore = await storage.createHardwareStore(storeToCreate);
+            console.log(`[BULK IMPORT] Successfully created store: ${createdStore.name}`);
             totalImported++;
           } catch (error) {
-            console.error(`Failed to import store: ${storeData.name}`, error);
-            result.errors.push(`Failed to import store: ${storeData.name}`);
+            console.error(`[BULK IMPORT] Failed to import store: ${storeData.name || 'Unknown'}`, error);
+            result.errors.push(`Failed to import store: ${storeData.name || 'Unknown'} - ${error.message}`);
           }
         }
 
@@ -2464,14 +2489,16 @@ const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]
 
         session.processedFiles++;
         await storage.updateBulkImportSession(sessionId, session);
+        
+        console.log(`[BULK IMPORT] Completed file ${file.originalname}. Imported ${totalImported} stores so far.`);
 
       } catch (error) {
-        console.error(`Failed to process file: ${file.originalname}`, error);
+        console.error(`[BULK IMPORT] Failed to process file: ${file.originalname}`, error);
         session.files[i].status = "error";
         session.files[i].result = {
           totalRows: 0,
           validRows: 0,
-          errors: [error.message],
+          errors: [error.message || 'Unknown processing error'],
           preview: []
         };
         session.processedFiles++;
@@ -2480,14 +2507,15 @@ const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]
     }
 
     // Update session status
-    session.status = session.files.every(f => f.status === "completed") ? "completed" : "failed";
+    session.status = session.files.every(f => f.status === "completed") ? "completed" : 
+                     session.files.some(f => f.status === "completed") ? "partial" : "failed";
     session.totalImported = totalImported;
     await storage.updateBulkImportSession(sessionId, session);
 
-    console.log(`Bulk import session ${sessionId} completed. Imported ${totalImported} hardware stores.`);
+    console.log(`[BULK IMPORT] Session ${sessionId} completed. Total imported: ${totalImported} hardware stores.`);
 
   } catch (error) {
-    console.error(`Session ${sessionId} failed:`, error);
+    console.error(`[BULK IMPORT] Session ${sessionId} failed:`, error);
     if (session) {
       session.status = "failed";
       await storage.updateBulkImportSession(sessionId, session);

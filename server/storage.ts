@@ -2213,6 +2213,35 @@ class MemoryStorage implements IStorage {
     const [template] = await db.insert(labelTemplates).values(templateData).returning();
     return template;
   }
+
+  // Bulk Import Sessions - Database implementation
+  async getBulkImportSessions(): Promise<BulkImportSession[]> {
+    return await db.select().from(bulkImportSessions).orderBy(desc(bulkImportSessions.createdAt)).limit(10);
+  }
+
+  async getBulkImportSession(sessionId: string): Promise<BulkImportSession | undefined> {
+    const [session] = await db.select().from(bulkImportSessions).where(eq(bulkImportSessions.id, sessionId));
+    return session || undefined;
+  }
+
+  async createBulkImportSession(session: InsertBulkImportSession): Promise<BulkImportSession> {
+    const [newSession] = await db.insert(bulkImportSessions).values(session).returning();
+    return newSession;
+  }
+
+  async updateBulkImportSession(sessionId: string, sessionData: BulkImportSession): Promise<BulkImportSession> {
+    const [updated] = await db.update(bulkImportSessions)
+      .set({
+        status: sessionData.status,
+        processedFiles: sessionData.processedFiles,
+        totalImported: sessionData.totalImported,
+        files: sessionData.files as any, // Cast to handle JSON type
+        updatedAt: new Date()
+      })
+      .where(eq(bulkImportSessions.id, sessionId))
+      .returning();
+    return updated;
+  }
 }
 
 export const storage = new DatabaseStorage();
