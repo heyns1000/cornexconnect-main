@@ -1250,9 +1250,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   isActive: true
                 };
 
-                // Store in Excel-specific tracking table first
+                // Create excel_uploads record first to satisfy foreign key constraint
+                let excelUploadId;
+                try {
+                  const excelUpload = await storage.createExcelUpload({
+                    fileName: file.originalname,
+                    mappedName: file.originalname,
+                    fileSize: file.size,
+                    status: "processing"
+                  });
+                  excelUploadId = excelUpload.id;
+                } catch (error) {
+                  // Excel upload record might already exist, try to get existing one
+                  const existingUploads = await storage.getExcelUploads();
+                  const existing = existingUploads.find(u => u.fileName === file.originalname);
+                  excelUploadId = existing?.id || sessionId;
+                }
+
+                // Store in Excel-specific tracking table with proper uploadId
                 await storage.createHardwareStoreFromExcel({
-                  uploadId: sessionId,
+                  uploadId: excelUploadId,
                   storeName: standardizedData.storeName,
                   storeAddress: standardizedData.address,
                   cityTown: standardizedData.city,

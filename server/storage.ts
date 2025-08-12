@@ -1698,6 +1698,11 @@ class MemoryStorage implements IStorage {
   private distributors: Distributor[] = [];
   private hardwareStores: HardwareStore[] = [];
   private bulkImportSessions: BulkImportSession[] = [];
+
+  // User Management Methods (Memory implementation)
+  async getAllUsers(): Promise<User[]> {
+    return this.users.filter(u => u.isActive);
+  }
   
   async createHardwareStore(store: InsertHardwareStore): Promise<HardwareStore> {
     const newStore: HardwareStore = {
