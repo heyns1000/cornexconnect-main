@@ -629,6 +629,23 @@ export type InsertHardwareStoreFromExcel = z.infer<typeof insertHardwareStoreFro
 export type SalesRepRouteFromExcel = typeof salesRepRoutesFromExcel.$inferSelect;
 export type InsertSalesRepRouteFromExcel = z.infer<typeof insertSalesRepRouteFromExcelSchema>;
 
+// Bulk Import Sessions table (for tracking file uploads)
+export const bulkImportSessions = pgTable("bulk_import_sessions", {
+  id: varchar("id").primaryKey(),
+  name: varchar("name").notNull(),
+  totalFiles: integer("total_files").notNull().default(0),
+  processedFiles: integer("processed_files").notNull().default(0),
+  totalImported: integer("total_imported").default(0),
+  status: varchar("status").notNull().default("active"), // active, completed, failed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  files: jsonb("files").notNull().default("[]"), // Store file processing details as JSON
+});
+
+export const insertBulkImportSessionSchema = createInsertSchema(bulkImportSessions).omit({ createdAt: true, updatedAt: true });
+export type BulkImportSession = typeof bulkImportSessions.$inferSelect;
+export type InsertBulkImportSession = z.infer<typeof insertBulkImportSessionSchema>;
+
 // Purchase Order System Tables
 export const purchaseOrders = pgTable("purchase_orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

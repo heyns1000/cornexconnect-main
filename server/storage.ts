@@ -29,7 +29,8 @@ import {
   type PurchaseOrder, type InsertPurchaseOrder,
   type PurchaseOrderItem, type InsertPurchaseOrderItem,
   type PoStatusHistory, type InsertPoStatusHistory,
-  type PoDocument, type InsertPoDocument
+  type PoDocument, type InsertPoDocument,
+  type BulkImportSession, type InsertBulkImportSession
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc, asc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -166,10 +167,10 @@ export interface IStorage {
   getLogisticsBrands(): Promise<any[]>;
 
   // Bulk Import Sessions
-  getBulkImportSessions(): Promise<any[]>;
-  getBulkImportSession(sessionId: string): Promise<any | undefined>;
-  createBulkImportSession(session: any): Promise<any>;
-  updateBulkImportSession(sessionId: string, session: any): Promise<any>;
+  getBulkImportSessions(): Promise<BulkImportSession[]>;
+  getBulkImportSession(sessionId: string): Promise<BulkImportSession | undefined>;
+  createBulkImportSession(session: InsertBulkImportSession): Promise<BulkImportSession>;
+  updateBulkImportSession(sessionId: string, session: BulkImportSession): Promise<BulkImportSession>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1414,7 +1415,7 @@ class MemoryStorage implements IStorage {
   // In-memory storage arrays
   private users: User[] = [];
   private hardwareStores: HardwareStore[] = [];
-  private bulkImportSessions: any[] = [];
+  private bulkImportSessions: BulkImportSession[] = [];
   
   async createHardwareStore(store: InsertHardwareStore): Promise<HardwareStore> {
     const newStore: HardwareStore = {
@@ -1496,23 +1497,29 @@ class MemoryStorage implements IStorage {
   }
 
   // Bulk Import Sessions
-  async getBulkImportSessions(): Promise<any[]> {
+  async getBulkImportSessions(): Promise<BulkImportSession[]> {
     return this.bulkImportSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 10);
   }
 
-  async getBulkImportSession(sessionId: string): Promise<any | undefined> {
+  async getBulkImportSession(sessionId: string): Promise<BulkImportSession | undefined> {
     return this.bulkImportSessions.find(session => session.id === sessionId);
   }
 
-  async createBulkImportSession(session: any): Promise<any> {
-    this.bulkImportSessions.push(session);
-    return session;
+  async createBulkImportSession(session: InsertBulkImportSession): Promise<BulkImportSession> {
+    const newSession: BulkImportSession = {
+      ...session,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.bulkImportSessions.push(newSession);
+    return newSession;
   }
 
-  async updateBulkImportSession(sessionId: string, updates: any): Promise<any> {
+  async updateBulkImportSession(sessionId: string, updates: BulkImportSession): Promise<BulkImportSession> {
     const index = this.bulkImportSessions.findIndex(session => session.id === sessionId);
     if (index !== -1) {
-      this.bulkImportSessions[index] = { ...this.bulkImportSessions[index], ...updates };
+      updates.updatedAt = new Date();
+      this.bulkImportSessions[index] = updates;
       return this.bulkImportSessions[index];
     }
     throw new Error(`Session ${sessionId} not found`);
