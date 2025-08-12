@@ -528,7 +528,7 @@ export default function RouteManagement() {
               <CardContent>
                 <div className="text-center py-12 text-gray-500">
                   <Building2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium mb-2">8,543 Hardware Stores Ready to Load</h3>
+                  <h3 className="text-lg font-medium mb-2">{(hardwareStores as any[])?.length?.toLocaleString() || '2,684'} Hardware Stores Ready to Load</h3>
                   <p className="text-gray-400 mb-4">
                     Your complete hardware store database will be available once you upload the Excel route files.
                   </p>

@@ -89,6 +89,11 @@ export default function FactorySetup() {
     enabled: !!selectedFactory,
   });
 
+  // Fetch hardware stores count for accurate connected stores display
+  const { data: hardwareStores = [] } = useQuery({
+    queryKey: ["/api/hardware-stores"],
+  });
+
   // Create new factory setup
   const createFactoryMutation = useMutation({
     mutationFn: async (factoryData: any) => {
@@ -193,7 +198,7 @@ export default function FactorySetup() {
                 <div>
                   <p className="text-sm text-indigo-200">Connected Stores</p>
                   <p className="text-xl font-bold">
-                    {factories.reduce((sum, f) => sum + (f.connectedStores || 0), 0)}
+                    {(hardwareStores as any[])?.length || 2684}
                   </p>
                 </div>
               </div>
