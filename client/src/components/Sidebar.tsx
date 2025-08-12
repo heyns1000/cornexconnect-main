@@ -18,7 +18,8 @@ import {
   Building2,
   User,
   LogOut,
-  Tag
+  Tag,
+  Map
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { name: "Inventory AI", href: "/inventory", icon: Warehouse },
     { name: "Global Distributors", href: "/distributors", icon: Users },
     { name: "Route Management", href: "/routes", icon: Route },
+    { name: "Store Map", href: "/store-map", icon: Map },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "SA Logistics", href: "/logistics", icon: Truck },
     { name: "Factory Setup", href: "/factory-setup", icon: Factory },

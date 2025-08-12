@@ -29,6 +29,7 @@ import UserManagement from "@/pages/UserManagement";
 import InventoryUpload from "@/pages/InventoryUpload";
 import AuditTrail from "@/pages/AuditTrail";
 import ProductLabels from "@/pages/ProductLabels";
+import StoreMapVisualization from "@/pages/StoreMapVisualization";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { FruitfulAssistChatbot, FruitfulAssistFloatingButton } from "@/components/FruitfulAssistChatbot";
@@ -84,6 +85,7 @@ function Router() {
         <Route path="/excel-upload" component={ExcelUpload} />
         <Route path="/bulk-import" component={BulkImport} />
         <Route path="/hardware-stores" component={HardwareStores} />
+        <Route path="/store-map" component={StoreMapVisualization} />
         <Route path="/logistics" component={LogisticsIntegration} />
         <Route path="/company-management" component={CompanyManagement} />
         <Route path="/company-settings" component={CompanySettings} />
