@@ -1374,11 +1374,25 @@ class MemoryStorage implements IStorage {
     ];
   }
 
-  // Stub implementations for all required methods
+  // Stub implementations for all required methods  
   async getUser(id: string): Promise<User | undefined> { return undefined; }
   async upsertUser(user: UpsertUser): Promise<User> { throw new Error("Database temporarily unavailable"); }
   async getUserByUsername(username: string): Promise<User | undefined> { return undefined; }
   async createUser(user: InsertUser): Promise<User> { throw new Error("Database temporarily unavailable"); }
+  
+  // Hardware stores with in-memory storage for bulk import
+  private hardwareStores: HardwareStore[] = [];
+  
+  async createHardwareStore(store: InsertHardwareStore): Promise<HardwareStore> {
+    const newStore: HardwareStore = {
+      id: `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...store,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.hardwareStores.push(newStore);
+    return newStore;
+  }
   async getProducts(): Promise<Product[]> { return []; }
   async getProduct(id: string): Promise<Product | undefined> { return undefined; }
   async getProductBySku(sku: string): Promise<Product | undefined> { return undefined; }
@@ -1414,10 +1428,13 @@ class MemoryStorage implements IStorage {
   async getSalesReps(): Promise<SalesRep[]> { return []; }
   async getSalesRep(id: string): Promise<SalesRep | undefined> { return undefined; }
   async createSalesRep(rep: InsertSalesRep): Promise<SalesRep> { throw new Error("Database temporarily unavailable"); }
-  async getHardwareStores(): Promise<HardwareStore[]> { return []; }
-  async getHardwareStore(id: string): Promise<HardwareStore | undefined> { return undefined; }
-  async createHardwareStore(store: InsertHardwareStore): Promise<HardwareStore> { throw new Error("Database temporarily unavailable"); }
-  async getHardwareStoresByProvince(province: string): Promise<HardwareStore[]> { return []; }
+  async getHardwareStores(): Promise<HardwareStore[]> { return this.hardwareStores; }
+  async getHardwareStore(id: string): Promise<HardwareStore | undefined> { 
+    return this.hardwareStores.find(store => store.id === id);
+  }
+  async getHardwareStoresByProvince(province: string): Promise<HardwareStore[]> { 
+    return this.hardwareStores.filter(store => store.province === province);
+  }
   async getRoutePlans(): Promise<(RoutePlan & { salesRep: SalesRep })[]> { return []; }
   async getRoutePlan(id: string): Promise<(RoutePlan & { salesRep: SalesRep; routeStores: (RouteStore & { hardwareStore: HardwareStore })[] }) | undefined> { return undefined; }
   async createRoutePlan(route: InsertRoutePlan): Promise<RoutePlan> { throw new Error("Database temporarily unavailable"); }

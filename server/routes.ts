@@ -19,8 +19,30 @@ import {
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import path from "path";
 
-// Configure multer for file uploads
+// Configure multer for bulk file uploads
+const bulkUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+    files: 50 // Maximum 50 files
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'text/csv'
+    ];
+    if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(xlsx|xls|csv)$/i)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only Excel and CSV files are allowed.'));
+    }
+  }
+});
+
+// Single file upload for existing functionality
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -34,6 +56,14 @@ const upload = multer({
   }
 });
 
+// Global storage for import sessions
+const importSessions = new Map<string, any>();
+
+// Helper function to generate session ID
+const generateSessionId = (): string => {
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
+
 // Map file names to Cornex references
 const mapFileNameToCornex = (fileName: string): string => {
   const lowerName = fileName.toLowerCase();
@@ -42,6 +72,156 @@ const mapFileNameToCornex = (fileName: string): string => {
   if (lowerName.includes('tripot')) return 'Cornex Tripot Distribution Points';
   if (lowerName.includes('cornice maker')) return 'Cornex Cornice Maker Retailers';
   return `Cornex ${fileName}`;
+};
+
+// Smart Excel data extraction for unstructured files
+const extractHardwareStoreData = (worksheet: XLSX.WorkSheet, fileName: string): any[] => {
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+  const extractedStores: any[] = [];
+  
+  // Common field patterns to look for
+  const fieldPatterns = {
+    name: /(store|shop|hardware|name|business|company)/i,
+    address: /(address|location|street|addr)/i,
+    contact: /(contact|phone|tel|mobile|cell)/i,
+    email: /(email|mail|e-mail)/i,
+    province: /(province|prov|state|region)/i,
+    city: /(city|town|municipality)/i,
+    manager: /(manager|owner|contact\s*person)/i,
+    creditLimit: /(credit|limit|cr\s*limit)/i,
+    type: /(type|category|size|class)/i
+  };
+
+  // Find header row by looking for the most field matches
+  let headerRowIndex = -1;
+  let maxMatches = 0;
+  
+  for (let i = 0; i < Math.min(10, jsonData.length); i++) {
+    const row = jsonData[i];
+    if (!row || !Array.isArray(row)) continue;
+    
+    let matches = 0;
+    for (const cell of row) {
+      if (typeof cell === 'string') {
+        for (const pattern of Object.values(fieldPatterns)) {
+          if (pattern.test(cell)) {
+            matches++;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      headerRowIndex = i;
+    }
+  }
+
+  if (headerRowIndex === -1) {
+    // Fallback: assume first row is header
+    headerRowIndex = 0;
+  }
+
+  const headers = jsonData[headerRowIndex] || [];
+  const fieldMapping: { [key: string]: number } = {};
+
+  // Map headers to field indices
+  headers.forEach((header, index) => {
+    if (typeof header === 'string') {
+      const lowerHeader = header.toLowerCase();
+      for (const [field, pattern] of Object.entries(fieldPatterns)) {
+        if (pattern.test(lowerHeader)) {
+          fieldMapping[field] = index;
+          break;
+        }
+      }
+    }
+  });
+
+  // Extract data rows
+  for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+    const row = jsonData[i];
+    if (!row || !Array.isArray(row)) continue;
+    
+    // Skip empty rows
+    if (row.every(cell => !cell || String(cell).trim() === '')) continue;
+
+    const store: any = {
+      id: `${fileName.replace(/\.[^/.]+$/, "")}_${i}`,
+      name: row[fieldMapping.name] || `Store ${i}`,
+      address: row[fieldMapping.address] || '',
+      contactPerson: row[fieldMapping.manager] || '',
+      phone: row[fieldMapping.contact] || '',
+      email: row[fieldMapping.email] || '',
+      province: row[fieldMapping.province] || 'Unknown',
+      city: row[fieldMapping.city] || '',
+      creditLimit: parseFloat(String(row[fieldMapping.creditLimit] || 0)) || 0,
+      storeType: row[fieldMapping.type] || 'hardware',
+      status: 'active',
+      source: `Bulk Import - ${fileName}`,
+      importedAt: new Date().toISOString()
+    };
+
+    // Validate minimum required data
+    if (store.name && store.name !== `Store ${i}`) {
+      extractedStores.push(store);
+    }
+  }
+
+  return extractedStores;
+};
+
+// Process a single file and extract hardware store data
+const processImportFile = async (file: Express.Multer.File): Promise<{
+  fileName: string;
+  totalRows: number;
+  validRows: number;
+  errors: string[];
+  extractedData: any[];
+}> => {
+  const errors: string[] = [];
+  let extractedData: any[] = [];
+
+  try {
+    let workbook: XLSX.WorkBook;
+
+    // Parse the file based on type
+    if (file.mimetype.includes('csv')) {
+      const csvContent = file.buffer.toString('utf-8');
+      workbook = XLSX.read(csvContent, { type: 'string' });
+    } else {
+      workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    }
+
+    // Process each worksheet
+    const sheetNames = workbook.SheetNames;
+    for (const sheetName of sheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      if (worksheet) {
+        const sheetData = extractHardwareStoreData(worksheet, file.originalname);
+        extractedData = extractedData.concat(sheetData);
+      }
+    }
+
+    return {
+      fileName: file.originalname,
+      totalRows: extractedData.length,
+      validRows: extractedData.filter(store => store.name && store.name !== '').length,
+      errors,
+      extractedData
+    };
+
+  } catch (error) {
+    errors.push(`Failed to parse file: ${error.message}`);
+    return {
+      fileName: file.originalname,
+      totalRows: 0,
+      validRows: 0,
+      errors,
+      extractedData: []
+    };
+  }
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -974,6 +1154,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add bulk import routes
+  addBulkImportRoutes(app);
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -1484,3 +1667,146 @@ async function initializeSampleData() {
     console.error("Failed to initialize sample data:", error);
   }
 }
+
+// Add bulk import routes before server creation
+const addBulkImportRoutes = (app: Express) => {
+  // Process bulk import files
+  app.post("/api/bulk-import/process", bulkUpload.array('files', 50), async (req, res) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No files provided" });
+      }
+
+      const sessionId = generateSessionId();
+      const session = {
+        id: sessionId,
+        name: `Import Session ${new Date().toLocaleString()}`,
+        totalFiles: files.length,
+        processedFiles: 0,
+        status: "active",
+        createdAt: new Date().toISOString(),
+        files: files.map(file => ({
+          id: `${sessionId}_${file.originalname}`,
+          fileName: file.originalname,
+          status: "pending",
+          progress: 0
+        }))
+      };
+
+      importSessions.set(sessionId, session);
+
+      // Process files asynchronously
+      processFilesAsync(sessionId, files);
+
+      res.json({ sessionId, message: "Import started successfully" });
+    } catch (error) {
+      console.error("Bulk import error:", error);
+      res.status(500).json({ error: "Failed to start import process" });
+    }
+  });
+
+  // Get import status
+  app.get("/api/bulk-import/status/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const session = importSessions.get(sessionId);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Session not found" });
+      }
+
+      res.json(session);
+    } catch (error) {
+      console.error("Status check error:", error);
+      res.status(500).json({ error: "Failed to get import status" });
+    }
+  });
+
+  // Get import history
+  app.get("/api/bulk-import/history", async (req, res) => {
+    try {
+      const history = Array.from(importSessions.values())
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 10); // Return last 10 sessions
+
+      res.json(history);
+    } catch (error) {
+      console.error("History fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch import history" });
+    }
+  });
+};
+
+// Async file processing function
+const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]) => {
+  const session = importSessions.get(sessionId);
+  if (!session) return;
+
+  try {
+    let totalImported = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileId = `${sessionId}_${file.originalname}`;
+      
+      // Update file status to processing
+      session.files[i].status = "processing";
+      session.files[i].progress = 0;
+
+      try {
+        const result = await processImportFile(file);
+        
+        // Update progress during processing
+        for (let progress = 10; progress <= 90; progress += 20) {
+          session.files[i].progress = progress;
+          await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing time
+        }
+
+        // Import hardware stores to storage
+        for (const storeData of result.extractedData) {
+          try {
+            await storage.createHardwareStore(storeData);
+            totalImported++;
+          } catch (error) {
+            console.error(`Failed to import store: ${storeData.name}`, error);
+            result.errors.push(`Failed to import store: ${storeData.name}`);
+          }
+        }
+
+        // Update file as completed
+        session.files[i].status = "completed";
+        session.files[i].progress = 100;
+        session.files[i].result = {
+          totalRows: result.totalRows,
+          validRows: result.validRows,
+          errors: result.errors,
+          preview: result.extractedData.slice(0, 5) // First 5 records for preview
+        };
+
+        session.processedFiles++;
+
+      } catch (error) {
+        console.error(`Failed to process file: ${file.originalname}`, error);
+        session.files[i].status = "error";
+        session.files[i].result = {
+          totalRows: 0,
+          validRows: 0,
+          errors: [error.message],
+          preview: []
+        };
+        session.processedFiles++;
+      }
+    }
+
+    // Update session status
+    session.status = session.files.every(f => f.status === "completed") ? "completed" : "failed";
+    session.totalImported = totalImported;
+
+    console.log(`Bulk import session ${sessionId} completed. Imported ${totalImported} hardware stores.`);
+
+  } catch (error) {
+    console.error(`Session ${sessionId} failed:`, error);
+    session.status = "failed";
+  }
+};

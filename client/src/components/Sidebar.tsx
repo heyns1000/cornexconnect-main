@@ -118,6 +118,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                 {!collapsed && <span>Factory Setup</span>}
               </div>
             </Link>
+            <Link href="/bulk-import">
+              <div className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <Upload className="w-4 h-4 mr-3 flex-shrink-0" />
+                {!collapsed && <span>Bulk Import</span>}
+              </div>
+            </Link>
             <Link href="/licensing">
               <div className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <FileText className="w-4 h-4 mr-3 flex-shrink-0" />
