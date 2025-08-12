@@ -251,6 +251,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Company Settings routes
+  app.get('/api/company-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      // Return Homemart Africa's company settings for the demo
+      const companySettings = {
+        companyName: "HOMEMART AFRICA",
+        companyRegistration: "2022/854581/07",
+        contactEmail: "info@homemart.co.za",
+        alternateEmail: "sales@homemart.co.za",
+        phone: "+27 11 123 4567",
+        alternatePhone: "+27 11 765 4321",
+        address: "123 Industrial Street, Johannesburg",
+        city: "Johannesburg",
+        province: "Gauteng",
+        postalCode: "2001",
+        country: "South Africa",
+        vatNumber: "4123456789",
+        businessType: "distributor",
+        creditLimit: "500000",
+        paymentTerms: "30_days"
+      };
+      res.json(companySettings);
+    } catch (error) {
+      console.error("Error fetching company settings:", error);
+      res.status(500).json({ message: "Failed to fetch company settings" });
+    }
+  });
+
+  app.put('/api/company-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      // For demo purposes, just return the updated settings
+      const updatedSettings = req.body;
+      res.json({ 
+        message: "Company settings updated successfully",
+        data: updatedSettings 
+      });
+    } catch (error) {
+      console.error("Error updating company settings:", error);
+      res.status(500).json({ message: "Failed to update company settings" });
+    }
+  });
+
   // Products routes
   app.get("/api/products", async (req, res) => {
     try {

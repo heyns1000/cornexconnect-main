@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -69,23 +70,30 @@ export default function CompanySettings() {
   const form = useForm<CompanySettingsForm>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: {
-      companyName: companySettings?.companyName || "HOMEMART AFRICA",
-      companyRegistration: companySettings?.companyRegistration || "2022/854581/07",
-      contactEmail: companySettings?.contactEmail || "info@homemart.co.za",
-      alternateEmail: companySettings?.alternateEmail || "",
-      phone: companySettings?.phone || "+27 11 123 4567",
-      alternatePhone: companySettings?.alternatePhone || "",
-      address: companySettings?.address || "123 Industrial Street, Johannesburg",
-      city: companySettings?.city || "Johannesburg",
-      province: companySettings?.province || "Gauteng",
-      postalCode: companySettings?.postalCode || "2001",
-      country: companySettings?.country || "South Africa",
-      vatNumber: companySettings?.vatNumber || "4123456789",
-      businessType: companySettings?.businessType || "distributor",
-      creditLimit: companySettings?.creditLimit?.toString() || "500000",
-      paymentTerms: companySettings?.paymentTerms || "30_days",
+      companyName: "HOMEMART AFRICA",
+      companyRegistration: "2022/854581/07",
+      contactEmail: "info@homemart.co.za",
+      alternateEmail: "",
+      phone: "+27 11 123 4567",
+      alternatePhone: "",
+      address: "123 Industrial Street, Johannesburg",
+      city: "Johannesburg",
+      province: "Gauteng",
+      postalCode: "2001",
+      country: "South Africa",
+      vatNumber: "4123456789",
+      businessType: "distributor",
+      creditLimit: "500000",
+      paymentTerms: "30_days",
     },
   });
+
+  // Update form values when data loads
+  React.useEffect(() => {
+    if (companySettings) {
+      form.reset(companySettings);
+    }
+  }, [companySettings, form]);
 
   const updateSettingsMutation = useMutation({
     mutationFn: async (data: CompanySettingsForm) => {
