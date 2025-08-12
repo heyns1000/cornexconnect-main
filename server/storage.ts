@@ -1616,6 +1616,15 @@ class MemoryStorage implements IStorage {
   async searchPurchaseOrders(query: string): Promise<PurchaseOrder[]> { return []; }
   async addStatusHistory(history: InsertPoStatusHistory): Promise<PoStatusHistory> { throw new Error("Database temporarily unavailable"); }
   async addDocument(document: InsertPoDocument): Promise<PoDocument> { throw new Error("Database temporarily unavailable"); }
+
+  // Methods for Excel uploads integration
+  async getExcelUploads(): Promise<any[]> { 
+    return [];
+  }
+
+  async getHardwareStoresExcel(): Promise<any[]> { 
+    return [];
+  }
 }
 
 export const storage = new MemoryStorage();
