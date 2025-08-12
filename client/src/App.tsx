@@ -22,9 +22,14 @@ import HardwareStores from "@/pages/HardwareStores";
 import LogisticsIntegration from "@/pages/LogisticsIntegration";
 import CompanyManagement from "@/pages/CompanyManagement";
 import Landing from "@/pages/Landing";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import CompanySettings from "@/pages/CompanySettings";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { FruitfulAssistChatbot, FruitfulAssistFloatingButton } from "@/components/FruitfulAssistChatbot";
+import { LoadingTransition } from "@/components/PageTransition";
+import { AnimatedCard, FadeIn } from "@/components/AnimatedComponents";
 import { useState } from "react";
 
 function Router() {
@@ -33,24 +38,23 @@ function Router() {
   // Show loading while checking authentication (only briefly)
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-600 mx-auto mb-4 loading-spinner"></div>
-          <div className="fade-in-up stagger-1">
-            <p className="text-gray-600 font-medium">Loading CornexConnect...</p>
-          </div>
-        </div>
-      </div>
+      <LoadingTransition isLoading={true}>
+        <div />
+      </LoadingTransition>
     );
   }
 
-  // Show landing page for unauthenticated users
+  // Show public pages for unauthenticated users
   if (!isAuthenticated) {
     return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route component={Landing} />
-      </Switch>
+      <PageTransition>
+        <Switch>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route component={Landing} />
+        </Switch>
+      </PageTransition>
     );
   }
 
@@ -73,6 +77,7 @@ function Router() {
         <Route path="/hardware-stores" component={HardwareStores} />
         <Route path="/logistics" component={LogisticsIntegration} />
         <Route path="/company-management" component={CompanyManagement} />
+        <Route path="/company-settings" component={CompanySettings} />
         <Route path="/brands/:id" component={BrandDetail} />
       </Switch>
     </PageTransition>

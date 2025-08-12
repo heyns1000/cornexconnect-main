@@ -646,6 +646,84 @@ export const insertBulkImportSessionSchema = createInsertSchema(bulkImportSessio
 export type BulkImportSession = typeof bulkImportSessions.$inferSelect;
 export type InsertBulkImportSession = z.infer<typeof insertBulkImportSessionSchema>;
 
+// Authentication and User Management Tables
+export const userRegistrations = pgTable("user_registrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  firstName: varchar("first_name").notNull(),
+  lastName: varchar("last_name").notNull(),
+  companyName: varchar("company_name").notNull(),
+  companyRegistration: varchar("company_registration"),
+  phone: varchar("phone"),
+  role: text("role").notNull().default("admin"), // admin, manager, user
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  verificationCode: varchar("verification_code"),
+  verificationExpiry: timestamp("verification_expiry"),
+  registeredAt: timestamp("registered_at").defaultNow(),
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by").references(() => users.id),
+});
+
+export const userAuditTrail = pgTable("user_audit_trail", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  action: text("action").notNull(), // login, logout, register, update_profile, password_change, etc.
+  details: text("details"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  sessionId: varchar("session_id"),
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const companySettings = pgTable("company_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  companyName: varchar("company_name").notNull(),
+  companyRegistration: varchar("company_registration"),
+  contactEmail: varchar("contact_email").notNull(),
+  alternateEmail: varchar("alternate_email"),
+  phone: varchar("phone"),
+  alternatePhone: varchar("alternate_phone"),
+  address: text("address"),
+  city: varchar("city"),
+  province: varchar("province"),
+  postalCode: varchar("postal_code"),
+  country: varchar("country").default("South Africa"),
+  vatNumber: varchar("vat_number"),
+  bankDetails: jsonb("bank_details"), // Store bank account info securely
+  businessType: text("business_type"), // distributor, retailer, manufacturer
+  creditLimit: decimal("credit_limit", { precision: 12, scale: 2 }).default("0"),
+  paymentTerms: text("payment_terms").default("30_days"), // 30_days, 60_days, cash
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for new tables
+export const userRegistrationsRelations = relations(userRegistrations, ({ one }) => ({
+  approver: one(users, { fields: [userRegistrations.approvedBy], references: [users.id] }),
+}));
+
+export const userAuditTrailRelations = relations(userAuditTrail, ({ one }) => ({
+  user: one(users, { fields: [userAuditTrail.userId], references: [users.id] }),
+}));
+
+export const companySettingsRelations = relations(companySettings, ({ one }) => ({
+  user: one(users, { fields: [companySettings.userId], references: [users.id] }),
+}));
+
+// Schema types for new tables
+export const insertUserRegistrationSchema = createInsertSchema(userRegistrations).omit({ id: true, registeredAt: true });
+export const insertUserAuditTrailSchema = createInsertSchema(userAuditTrail).omit({ id: true, timestamp: true });
+export const insertCompanySettingsSchema = createInsertSchema(companySettings).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type UserRegistration = typeof userRegistrations.$inferSelect;
+export type InsertUserRegistration = z.infer<typeof insertUserRegistrationSchema>;
+export type UserAuditTrail = typeof userAuditTrail.$inferSelect;
+export type InsertUserAuditTrail = z.infer<typeof insertUserAuditTrailSchema>;
+export type CompanySettings = typeof companySettings.$inferSelect;
+export type InsertCompanySettings = z.infer<typeof insertCompanySettingsSchema>;
+
 // Purchase Order System Tables
 export const purchaseOrders = pgTable("purchase_orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

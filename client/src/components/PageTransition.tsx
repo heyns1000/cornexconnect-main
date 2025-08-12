@@ -77,7 +77,10 @@ export const PageTransition = ({ children }: PageTransitionProps) => {
     '/purchase-orders',
     '/factory-setup',
     '/automation',
-    '/excel-upload',
+    '/bulk-import',
+    '/company-settings',
+    '/login',
+    '/register',
     '/analytics'
   ];
 
