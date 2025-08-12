@@ -1424,7 +1424,15 @@ class MemoryStorage implements IStorage {
   async getSalesMetricsByRegion(): Promise<{ region: string; revenue: string; units: number }[]> { return []; }
   async getTopProducts(limit?: number): Promise<{ product: Product; revenue: string; units: number }[]> { return []; }
   async getBrands(): Promise<Brand[]> { return []; }
-  async createBrand(brand: InsertBrand): Promise<Brand> { throw new Error("Database temporarily unavailable"); }
+  async createBrand(brand: InsertBrand): Promise<Brand> { 
+    const newBrand: Brand = {
+      id: `brand_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...brand,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    return newBrand;
+  }
   async getSalesReps(): Promise<SalesRep[]> { return []; }
   async getSalesRep(id: string): Promise<SalesRep | undefined> { return undefined; }
   async createSalesRep(rep: InsertSalesRep): Promise<SalesRep> { throw new Error("Database temporarily unavailable"); }
