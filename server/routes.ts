@@ -1177,7 +1177,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple test endpoint to verify upload is working
+  app.get('/api/test-upload', (req, res) => {
+    res.json({ 
+      message: "Upload system is working", 
+      timestamp: new Date().toISOString(),
+      sessions: importSessions.size 
+    });
+  });
+
   // Bulk Import API Routes
+  app.get("/api/bulk-import/history", async (req, res) => {
+    try {
+      const sessions = await storage.getImportSessions();
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching import sessions:", error);
+      res.status(500).json({ error: "Failed to fetch import sessions" });
+    }
+  });
+
   app.get("/api/import-sessions", async (req, res) => {
     try {
       const sessions = await storage.getImportSessions();
