@@ -1274,21 +1274,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
               
               // Convert to string and validate
-              if (storeName) {
-                storeName = String(storeName).trim();
+              if (storeName && storeName !== null && storeName !== undefined) {
+                const cleanStoreName = String(storeName).trim();
                 
                 // Accept ANY non-empty string that's not a header
-                if (storeName && 
-                    storeName.length > 0 && 
-                    storeName !== 'Company Name' && 
-                    storeName !== 'STORE NAME' && 
-                    storeName !== 'Store Name' &&
-                    !storeName.toLowerCase().includes('header') &&
-                    !storeName.toLowerCase().includes('column')) {
+                if (cleanStoreName && 
+                    cleanStoreName.length > 0 && 
+                    cleanStoreName !== 'Company Name' && 
+                    cleanStoreName !== 'STORE NAME' && 
+                    cleanStoreName !== 'Store Name' &&
+                    !cleanStoreName.toLowerCase().includes('header') &&
+                    !cleanStoreName.toLowerCase().includes('column')) {
+                  
+                  const provinceValue = Array.isArray(row) ? row[1] : (row['PROVINCE'] || row['Province']);
                   
                   storeData = {
-                    storeName: storeName,
-                    province: (Array.isArray(row) ? row[1] : row['PROVINCE'] || row['Province']) || 'Unknown',
+                    storeName: cleanStoreName,
+                    province: (provinceValue && String(provinceValue).trim()) || 'Unknown',
                     address: null,
                     city: null,
                     contactPerson: null,
