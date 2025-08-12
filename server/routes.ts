@@ -1255,24 +1255,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Extract store data using flexible mapping
               const storeData = extractStoreData(row, detectedColumns, i);
               
-              if (storeData && storeData.storeName && storeData.storeName !== 'STORE NAME') {
+              if (storeData && storeData.storeName && 
+                  storeData.storeName !== 'STORE NAME' && 
+                  storeData.storeName.length > 2 &&
+                  !storeData.storeName.toUpperCase().includes('HEADER')) {
+                
                 // Standardize province and city naming
                 const standardizedData = standardizeLocationData(storeData);
                 
                 // Generate unique store code to avoid duplicates
-                const uniqueStoreCode = `${sessionId}_${i}_${Date.now()}`;
+                const uniqueStoreCode = `${sessionId}_${i}_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
                 
                 const storeToCreate = {
                   storeCode: uniqueStoreCode,
                   storeName: standardizedData.storeName,
-                  address: standardizedData.address,
-                  contactPerson: standardizedData.contactPerson,
-                  phone: standardizedData.phone,
-                  email: standardizedData.email,
-                  province: standardizedData.province,
-                  city: standardizedData.city,
+                  address: standardizedData.address || 'Not Specified',
+                  contactPerson: standardizedData.contactPerson || null,
+                  phone: standardizedData.phone || null,
+                  email: standardizedData.email || null,
+                  province: standardizedData.province || 'Unknown',
+                  city: standardizedData.city || 'Unknown',
                   creditLimit: '0.00',
-                  storeType: standardizedData.storeType,
+                  storeType: standardizedData.storeType || 'hardware',
                   isActive: true
                 };
 
@@ -1307,18 +1311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   mappedToCornex: false
                 });
 
-                // Check if store already exists to avoid duplicates
-                const existingStore = await storage.getHardwareStoresByProvince(standardizedData.province);
-                const isDuplicate = existingStore.some(store => 
-                  store.storeName.toLowerCase() === standardizedData.storeName.toLowerCase() &&
-                  store.city.toLowerCase() === standardizedData.city.toLowerCase()
-                );
-
-                if (!isDuplicate) {
-                  await storage.createHardwareStore(storeToCreate);
-                } else {
-                  console.log(`Skipping duplicate store: ${standardizedData.storeName} in ${standardizedData.city}`);
-                }
+                // Create store directly without duplicate check for Excel imports
+                // (since each Excel might have legitimate duplicate names in different areas)
+                await storage.createHardwareStore(storeToCreate);
                 validRows++;
                 totalImported++;
                 

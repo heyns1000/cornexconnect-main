@@ -834,7 +834,7 @@ export class DatabaseStorage implements IStorage {
       // Check if store already exists in main directory
       const existingStore = await db.select()
         .from(hardwareStores)
-        .where(eq(hardwareStores.name, excelStore.storeName))
+        .where(eq(hardwareStores.storeName, excelStore.storeName))
         .limit(1);
 
       if (existingStore.length === 0) {
