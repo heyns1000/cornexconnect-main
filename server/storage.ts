@@ -38,7 +38,16 @@ import {
   type ProductLabel, type InsertProductLabel,
   type Printer, type InsertPrinter,
   type PrintJob, type InsertPrintJob,
-  type LabelTemplate, type InsertLabelTemplate
+  type LabelTemplate, type InsertLabelTemplate,
+  userMoodPreferences,
+  type UserMoodPreference,
+  type InsertUserMoodPreference,
+  userMoodHistory,
+  type UserMoodHistory,
+  type InsertUserMoodHistory,
+  aiMoodAnalytics,
+  type AiMoodAnalytics,
+  type InsertAiMoodAnalytics
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc, asc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -57,6 +66,19 @@ export interface IStorage {
   getAuditLogs(filters?: any): Promise<UserAuditTrail[]>;
   createAuditLog(log: InsertUserAuditTrail): Promise<UserAuditTrail>;
 
+  // AI-Powered Mood Selector System (Database-first implementation)
+  getUserMoodPreferences(userId: string): Promise<UserMoodPreference[]>;
+  getUserMoodPreference(userId: string, moodId: string): Promise<UserMoodPreference | undefined>;
+  createUserMoodPreference(preference: InsertUserMoodPreference): Promise<UserMoodPreference>;
+  updateUserMoodPreference(id: string, preference: Partial<InsertUserMoodPreference>): Promise<UserMoodPreference>;
+  deleteUserMoodPreference(id: string): Promise<boolean>;
+  getUserMoodHistory(userId: string, filters?: { limit?: number; moodId?: string; timeRange?: { start: Date; end: Date } }): Promise<UserMoodHistory[]>;
+  createUserMoodHistory(history: InsertUserMoodHistory): Promise<UserMoodHistory>;
+  getAiMoodAnalytics(userId: string, analysisType?: string): Promise<AiMoodAnalytics[]>;
+  createAiMoodAnalytics(analytics: InsertAiMoodAnalytics): Promise<AiMoodAnalytics>;
+  findUsersByMoodPattern(pattern: { moodId?: string; timeOfDay?: string; dayOfWeek?: string }): Promise<User[]>;
+  updateMoodUsageStats(userId: string, moodId: string): Promise<void>;
+  
   // Product Labeling System
   getProductLabels(): Promise<ProductLabel[]>;
   getProductLabel(id: string): Promise<ProductLabel | undefined>;
@@ -2241,6 +2263,173 @@ class MemoryStorage implements IStorage {
       .where(eq(bulkImportSessions.id, sessionId))
       .returning();
     return updated;
+  }
+
+  // AI-Powered Mood Selector System Implementation
+  async getUserMoodPreferences(userId: string): Promise<UserMoodPreference[]> {
+    return await db
+      .select()
+      .from(userMoodPreferences)
+      .where(eq(userMoodPreferences.userId, userId))
+      .orderBy(desc(userMoodPreferences.usageCount), desc(userMoodPreferences.lastUsed));
+  }
+
+  async getUserMoodPreference(userId: string, moodId: string): Promise<UserMoodPreference | undefined> {
+    const [preference] = await db
+      .select()
+      .from(userMoodPreferences)
+      .where(and(
+        eq(userMoodPreferences.userId, userId),
+        eq(userMoodPreferences.moodId, moodId)
+      ));
+    return preference;
+  }
+
+  async createUserMoodPreference(preference: InsertUserMoodPreference): Promise<UserMoodPreference> {
+    const [created] = await db
+      .insert(userMoodPreferences)
+      .values(preference)
+      .returning();
+    return created;
+  }
+
+  async updateUserMoodPreference(id: string, preference: Partial<InsertUserMoodPreference>): Promise<UserMoodPreference> {
+    const [updated] = await db
+      .update(userMoodPreferences)
+      .set({ ...preference, updatedAt: new Date() })
+      .where(eq(userMoodPreferences.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteUserMoodPreference(id: string): Promise<boolean> {
+    const result = await db
+      .delete(userMoodPreferences)
+      .where(eq(userMoodPreferences.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getUserMoodHistory(
+    userId: string, 
+    filters?: { limit?: number; moodId?: string; timeRange?: { start: Date; end: Date } }
+  ): Promise<UserMoodHistory[]> {
+    let query = db
+      .select()
+      .from(userMoodHistory)
+      .where(eq(userMoodHistory.userId, userId));
+
+    if (filters?.moodId) {
+      query = query.where(eq(userMoodHistory.moodId, filters.moodId));
+    }
+
+    if (filters?.timeRange) {
+      query = query.where(and(
+        gte(userMoodHistory.timestamp, filters.timeRange.start),
+        lte(userMoodHistory.timestamp, filters.timeRange.end)
+      ));
+    }
+
+    query = query.orderBy(desc(userMoodHistory.timestamp));
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+
+    return await query;
+  }
+
+  async createUserMoodHistory(history: InsertUserMoodHistory): Promise<UserMoodHistory> {
+    const [created] = await db
+      .insert(userMoodHistory)
+      .values(history)
+      .returning();
+    return created;
+  }
+
+  async getAiMoodAnalytics(userId: string, analysisType?: string): Promise<AiMoodAnalytics[]> {
+    let query = db
+      .select()
+      .from(aiMoodAnalytics)
+      .where(eq(aiMoodAnalytics.userId, userId));
+
+    if (analysisType) {
+      query = query.where(eq(aiMoodAnalytics.analysisType, analysisType));
+    }
+
+    return await query.orderBy(desc(aiMoodAnalytics.generatedAt));
+  }
+
+  async createAiMoodAnalytics(analytics: InsertAiMoodAnalytics): Promise<AiMoodAnalytics> {
+    const [created] = await db
+      .insert(aiMoodAnalytics)
+      .values(analytics)
+      .returning();
+    return created;
+  }
+
+  async findUsersByMoodPattern(pattern: { 
+    moodId?: string; 
+    timeOfDay?: string; 
+    dayOfWeek?: string 
+  }): Promise<User[]> {
+    let historyQuery = db
+      .select({ userId: userMoodHistory.userId })
+      .from(userMoodHistory);
+
+    const conditions = [];
+    if (pattern.moodId) {
+      conditions.push(eq(userMoodHistory.moodId, pattern.moodId));
+    }
+    if (pattern.timeOfDay) {
+      conditions.push(eq(userMoodHistory.timeOfDay, pattern.timeOfDay));
+    }
+    if (pattern.dayOfWeek) {
+      conditions.push(eq(userMoodHistory.dayOfWeek, pattern.dayOfWeek));
+    }
+
+    if (conditions.length > 0) {
+      historyQuery = historyQuery.where(and(...conditions));
+    }
+
+    const userIds = await historyQuery;
+    const uniqueUserIds = [...new Set(userIds.map(row => row.userId))];
+
+    if (uniqueUserIds.length === 0) {
+      return [];
+    }
+
+    return await db
+      .select()
+      .from(users)
+      .where(sql`${users.id} IN ${uniqueUserIds}`);
+  }
+
+  async updateMoodUsageStats(userId: string, moodId: string): Promise<void> {
+    // First try to update existing preference
+    const existingPreference = await this.getUserMoodPreference(userId, moodId);
+    
+    if (existingPreference) {
+      await db
+        .update(userMoodPreferences)
+        .set({
+          usageCount: sql`${userMoodPreferences.usageCount} + 1`,
+          lastUsed: new Date(),
+          updatedAt: new Date()
+        })
+        .where(eq(userMoodPreferences.id, existingPreference.id));
+    } else {
+      // Create new preference if it doesn't exist
+      await this.createUserMoodPreference({
+        userId,
+        moodId,
+        moodName: moodId,
+        energyLevel: 50,
+        focusLevel: 50,
+        creativityLevel: 50,
+        usageCount: 1,
+        lastUsed: new Date()
+      });
+    }
   }
 }
 

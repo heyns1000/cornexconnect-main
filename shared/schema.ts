@@ -757,6 +757,81 @@ export type InsertHardwareStoreFromExcel = z.infer<typeof insertHardwareStoreFro
 export type SalesRepRouteFromExcel = typeof salesRepRoutesFromExcel.$inferSelect;
 export type InsertSalesRepRouteFromExcel = z.infer<typeof insertSalesRepRouteFromExcelSchema>;
 
+// AI-Powered Mood Selector Database Tables
+export const userMoodPreferences = pgTable("user_mood_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  moodId: text("mood_id").notNull(), // energetic, focused, creative, calm, productive
+  moodName: text("mood_name").notNull(),
+  energyLevel: integer("energy_level").notNull().default(50), // 0-100
+  focusLevel: integer("focus_level").notNull().default(50), // 0-100
+  creativityLevel: integer("creativity_level").notNull().default(50), // 0-100
+  isDefault: boolean("is_default").default(false),
+  isAdaptive: boolean("is_adaptive").default(false),
+  transitionSettings: jsonb("transition_settings"), // duration, easing, etc.
+  aiRecommended: boolean("ai_recommended").default(false),
+  usageCount: integer("usage_count").default(0),
+  lastUsed: timestamp("last_used"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const userMoodHistory = pgTable("user_mood_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  moodId: text("mood_id").notNull(),
+  moodName: text("mood_name").notNull(),
+  timeOfDay: text("time_of_day"), // morning, afternoon, evening, night
+  dayOfWeek: text("day_of_week"), // monday, tuesday, etc.
+  sessionDuration: integer("session_duration"), // minutes
+  contextData: jsonb("context_data"), // page visited, actions taken, etc.
+  aiAnalysis: jsonb("ai_analysis"), // OpenAI mood analysis results
+  satisfaction: integer("satisfaction"), // 1-5 rating (if provided)
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const aiMoodAnalytics = pgTable("ai_mood_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  analysisType: text("analysis_type").notNull(), // daily_pattern, weekly_trend, productivity_correlation
+  insights: jsonb("insights"), // AI-generated insights
+  recommendations: jsonb("recommendations"), // suggested mood adjustments
+  confidence: integer("confidence"), // 0-100 AI confidence score
+  dataPoints: integer("data_points"), // number of sessions analyzed
+  generatedAt: timestamp("generated_at").defaultNow(),
+});
+
+// Mood selector relations
+export const userMoodPreferencesRelations = relations(userMoodPreferences, ({ one, many }) => ({
+  user: one(users, { fields: [userMoodPreferences.userId], references: [users.id] }),
+  history: many(userMoodHistory),
+}));
+
+export const userMoodHistoryRelations = relations(userMoodHistory, ({ one }) => ({
+  user: one(users, { fields: [userMoodHistory.userId], references: [users.id] }),
+  preference: one(userMoodPreferences, { 
+    fields: [userMoodHistory.userId, userMoodHistory.moodId], 
+    references: [userMoodPreferences.userId, userMoodPreferences.moodId] 
+  }),
+}));
+
+export const aiMoodAnalyticsRelations = relations(aiMoodAnalytics, ({ one }) => ({
+  user: one(users, { fields: [aiMoodAnalytics.userId], references: [users.id] }),
+}));
+
+// Mood selector schemas
+export const insertUserMoodPreferenceSchema = createInsertSchema(userMoodPreferences).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertUserMoodHistorySchema = createInsertSchema(userMoodHistory).omit({ id: true, timestamp: true });
+export const insertAiMoodAnalyticsSchema = createInsertSchema(aiMoodAnalytics).omit({ id: true, generatedAt: true });
+
+// Mood selector types
+export type UserMoodPreference = typeof userMoodPreferences.$inferSelect;
+export type InsertUserMoodPreference = z.infer<typeof insertUserMoodPreferenceSchema>;
+export type UserMoodHistory = typeof userMoodHistory.$inferSelect;
+export type InsertUserMoodHistory = z.infer<typeof insertUserMoodHistorySchema>;
+export type AiMoodAnalytics = typeof aiMoodAnalytics.$inferSelect;
+export type InsertAiMoodAnalytics = z.infer<typeof insertAiMoodAnalyticsSchema>;
+
 // Bulk Import Sessions table (for tracking file uploads)
 export const bulkImportSessions = pgTable("bulk_import_sessions", {
   id: varchar("id").primaryKey(),

@@ -2749,4 +2749,87 @@ const processFilesAsync = async (sessionId: string, files: Express.Multer.File[]
       await storage.updateBulkImportSession(sessionId, session);
     }
   }
+
+  // AI-Powered Mood Selector Routes
+  app.get("/api/mood/preferences/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const preferences = await storage.getUserMoodPreferences(userId);
+      res.json(preferences);
+    } catch (error) {
+      console.error("Error fetching user mood preferences:", error);
+      res.status(500).json({ error: "Failed to fetch mood preferences" });
+    }
+  });
+
+  app.post("/api/mood/preferences", async (req, res) => {
+    try {
+      const preference = await storage.createUserMoodPreference(req.body);
+      res.json(preference);
+    } catch (error) {
+      console.error("Error creating mood preference:", error);
+      res.status(500).json({ error: "Failed to create mood preference" });
+    }
+  });
+
+  app.get("/api/mood/history/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { limit, moodId } = req.query;
+      
+      const filters: any = {};
+      if (limit) filters.limit = parseInt(limit as string);
+      if (moodId) filters.moodId = moodId as string;
+      
+      const history = await storage.getUserMoodHistory(userId, filters);
+      res.json(history);
+    } catch (error) {
+      console.error("Error fetching mood history:", error);
+      res.status(500).json({ error: "Failed to fetch mood history" });
+    }
+  });
+
+  app.post("/api/mood/history", async (req, res) => {
+    try {
+      const data = {
+        ...req.body,
+        timeOfDay: getTimeOfDay(),
+        dayOfWeek: getDayOfWeek(),
+        timestamp: new Date()
+      };
+      
+      const created = await storage.createUserMoodHistory(data);
+      await storage.updateMoodUsageStats(data.userId, data.moodId);
+      
+      res.json(created);
+    } catch (error) {
+      console.error("Error creating mood history:", error);
+      res.status(500).json({ error: "Failed to create mood history" });
+    }
+  });
+
+  app.post("/api/mood/usage/:userId/:moodId", async (req, res) => {
+    try {
+      const { userId, moodId } = req.params;
+      await storage.updateMoodUsageStats(userId, moodId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating mood usage stats:", error);
+      res.status(500).json({ error: "Failed to update usage stats" });
+    }
+  });
+
+  // Helper functions for mood selector
+  function getTimeOfDay(): string {
+    const hour = new Date().getHours();
+    if (hour < 6) return "night";
+    if (hour < 12) return "morning";
+    if (hour < 18) return "afternoon";
+    return "evening";
+  }
+
+  function getDayOfWeek(): string {
+    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    return days[new Date().getDay()];
+  }
 };
