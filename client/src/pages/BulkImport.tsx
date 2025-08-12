@@ -46,7 +46,7 @@ export default function BulkImport() {
   const [activeTab, setActiveTab] = useState("upload");
 
   // Fetch import history
-  const { data: importHistory = [] } = useQuery({
+  const { data: importHistory = [] } = useQuery<ImportSession[]>({
     queryKey: ["/api/bulk-import/history"]
   });
 
