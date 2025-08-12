@@ -1229,11 +1229,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             result: null
           };
 
-          // Process Excel file
+          // Process Excel file - read ALL data including empty cells
           const workbook = XLSX.read(file.buffer, { type: 'buffer' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+          
+          // Get full range to capture all data
+          const range = worksheet['!ref'] ? XLSX.utils.decode_range(worksheet['!ref']) : null;
+          console.log(`Worksheet range: ${worksheet['!ref']}, Total rows: ${range ? range.e.r + 1 : 'unknown'}`);
+          
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+            header: 1, 
+            defval: "", 
+            range: 0,
+            raw: false
+          });
 
           console.log(`Found ${jsonData.length} rows in ${file.originalname}`);
 
@@ -1252,22 +1262,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const row = jsonData[i];
             
             try {
-              // For Homemart format, directly extract from row array
+              // Direct extraction from row array for maximum coverage
               let storeData = null;
-              if (Array.isArray(row) && row[0] && typeof row[0] === 'string' && row[0].trim() !== '') {
-                storeData = {
-                  storeName: row[0].trim(),
-                  province: row[1] || 'Unknown',
-                  address: null,
-                  city: null,
-                  contactPerson: null,
-                  phone: null,
-                  email: null,
-                  storeType: 'hardware'
-                };
-              } else {
-                // Fallback to flexible mapping for other formats
-                storeData = extractStoreData(row, detectedColumns, i);
+              let storeName = null;
+              
+              // Handle both array and object formats
+              if (Array.isArray(row)) {
+                storeName = row[0];
+              } else if (row && typeof row === 'object') {
+                storeName = row['Company Name'] || row['STORE NAME'] || row['Store Name'] || row['store_name'] || Object.values(row)[0];
+              }
+              
+              // Convert to string and validate
+              if (storeName) {
+                storeName = String(storeName).trim();
+                
+                // Accept ANY non-empty string that's not a header
+                if (storeName && 
+                    storeName.length > 0 && 
+                    storeName !== 'Company Name' && 
+                    storeName !== 'STORE NAME' && 
+                    storeName !== 'Store Name' &&
+                    !storeName.toLowerCase().includes('header') &&
+                    !storeName.toLowerCase().includes('column')) {
+                  
+                  storeData = {
+                    storeName: storeName,
+                    province: (Array.isArray(row) ? row[1] : row['PROVINCE'] || row['Province']) || 'Unknown',
+                    address: null,
+                    city: null,
+                    contactPerson: null,
+                    phone: null,
+                    email: null,
+                    storeType: 'hardware'
+                  };
+                }
               }
               
               if (storeData && storeData.storeName && 
