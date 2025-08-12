@@ -27,8 +27,8 @@ import multer from "multer";
 import * as XLSX from "xlsx";
 import path from "path";
 import { db } from "./db";
-import { bulkImportSessions } from "@shared/schema";
-import { desc, eq } from "drizzle-orm";
+import { bulkImportSessions, hardwareStores } from "@shared/schema";
+import { desc, eq, sql } from "drizzle-orm";
 
 // Excel structure detection and standardization functions
 function detectExcelStructure(sampleRows: any[]): any {
@@ -1593,8 +1593,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       // Get accurate hardware store count directly from database
-      const [storeCountResult] = await db.select({ count: sql`COUNT(*)` }).from(hardwareStores);
-      const totalHardwareStores = parseInt(storeCountResult.count);
+      const storeCountResult = await db.select({ count: sql`COUNT(*)` }).from(hardwareStores);
+      const totalHardwareStores = parseInt(storeCountResult[0].count);
 
       const revenue = totalRevenue.reduce((sum, metric) => sum + parseFloat(metric.revenue), 0);
       const units = totalRevenue.reduce((sum, metric) => sum + metric.units, 0);
