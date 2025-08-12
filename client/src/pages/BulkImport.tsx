@@ -82,8 +82,8 @@ export default function BulkImport() {
     onSuccess: (data) => {
       console.log("Upload success:", data);
       toast({
-        title: "Import Started",
-        description: `Processing ${importFiles.length} files...`,
+        title: "Upload Successful!",
+        description: `Successfully processed ${data.processedFiles?.length || importFiles.length} files. ${data.message || 'Import completed successfully.'}`,
       });
       
       // Start polling session status if we have a session ID
@@ -91,8 +91,9 @@ export default function BulkImport() {
         startProgressPolling(data.sessionId);
       }
       
-      // Update history
+      // Update hardware stores data to reflect new imports
       queryClient.invalidateQueries({ queryKey: ["/api/bulk-import/history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hardware-stores"] });
       
       // Clear files from UI after successful upload
       setImportFiles([]);
