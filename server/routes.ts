@@ -29,6 +29,101 @@ import { db } from "./db";
 import { bulkImportSessions } from "@shared/schema";
 import { desc, eq } from "drizzle-orm";
 
+// Excel structure detection and standardization functions
+function detectExcelStructure(sampleRows: any[]): any {
+  const detectedColumns: any = {
+    storeName: null,
+    address: null,
+    city: null,
+    province: null,
+    contactPerson: null,
+    phone: null,
+    email: null,
+    storeType: null
+  };
+
+  // Common column name patterns
+  const patterns: Record<string, string[]> = {
+    storeName: ['STORE NAME', 'Store Name', 'Name', 'CUSTOMER NAME', 'Business Name', 'Shop Name'],
+    address: ['STREET ADDRESS', 'Address', 'Street Address', 'Physical Address', 'Location'],
+    city: ['CITY', 'City', 'AREA', 'Area', 'Town', 'TOWN'],
+    province: ['PROVINCE', 'Province', 'Region', 'State'],
+    contactPerson: ['CUSTOMER NAME', 'Contact Name', 'Contact Person', 'Manager', 'Owner'],
+    phone: ['CUSTOMER NUMBER', 'Phone', 'Telephone', 'Cell', 'Mobile', 'Contact Number'],
+    email: ['EMAIL', 'Email', 'E-mail', 'Email Address'],
+    storeType: ['GROUP', 'Type', 'Store Type', 'Category', 'TYPE OF CLIENT', 'Classification']
+  };
+
+  // Detect columns from first row (headers)
+  if (sampleRows.length > 0) {
+    const headers = Object.keys(sampleRows[0] || {});
+    
+    for (const [field, possibleNames] of Object.entries(patterns)) {
+      for (const header of headers) {
+        if (possibleNames.some(pattern => 
+          header.toUpperCase().includes(pattern.toUpperCase()) ||
+          pattern.toUpperCase().includes(header.toUpperCase())
+        )) {
+          detectedColumns[field] = header;
+          break;
+        }
+      }
+    }
+  }
+
+  return detectedColumns;
+}
+
+function extractStoreData(row: any, columns: any, rowIndex: number): any {
+  if (!row || typeof row !== 'object') return null;
+
+  const storeName = row[columns.storeName] || row['STORE NAME'] || row['Name'] || row['CUSTOMER NAME'];
+  if (!storeName || storeName.toString().trim() === '') return null;
+
+  return {
+    storeName: storeName.toString().trim(),
+    address: (row[columns.address] || row['STREET ADDRESS'] || row['Address'] || '').toString(),
+    city: (row[columns.city] || row['CITY'] || row['AREA'] || row['Town'] || '').toString(),
+    province: (row[columns.province] || row['PROVINCE'] || row['Region'] || 'Unknown').toString(),
+    contactPerson: (row[columns.contactPerson] || row['CUSTOMER NAME'] || row['Contact Name'] || '').toString(),
+    phone: (row[columns.phone] || row['CUSTOMER NUMBER'] || row['Phone'] || '').toString(),
+    email: row[columns.email] || row['EMAIL'] || row['Email'] || null,
+    storeType: (row[columns.storeType] || row['GROUP'] || row['Type'] || 'hardware').toString()
+  };
+}
+
+function standardizeLocationData(data: any): any {
+  // Standardize province names
+  const provinceMap: Record<string, string> = {
+    'GAUTENG': 'GAUTENG',
+    'WESTERN CAPE': 'WESTERN CAPE', 
+    'KWAZULU-NATAL': 'KWAZULU-NATAL',
+    'EASTERN CAPE': 'EASTERN CAPE',
+    'LIMPOPO': 'LIMPOPO',
+    'MPUMALANGA': 'MPUMALANGA',
+    'NORTH WEST': 'NORTH WEST',
+    'NORTHERN CAPE': 'NORTHERN CAPE',
+    'FREE STATE': 'FREE STATE',
+    'FREESTATE': 'FREE STATE',
+    'NORTH WEST ': 'NORTH WEST',
+    'LIMPOPO ': 'LIMPOPO',
+    'MPUMALANGA ': 'MPUMALANGA'
+  };
+
+  const standardizedProvince = provinceMap[data.province.toUpperCase().trim()] || data.province.toUpperCase().trim();
+
+  return {
+    ...data,
+    province: standardizedProvince,
+    city: data.city.trim(),
+    storeName: data.storeName.trim(),
+    address: data.address.trim(),
+    contactPerson: data.contactPerson.trim(),
+    phone: data.phone.trim(),
+    storeType: data.storeType.trim()
+  };
+}
+
 // Configure multer for bulk file uploads
 const bulkUpload = multer({
   storage: multer.memoryStorage(),
@@ -585,6 +680,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Structured hardware stores by province and town
+  app.get("/api/hardware-stores/structured", async (req, res) => {
+    try {
+      const allStores = await storage.getHardwareStores();
+      
+      // Structure data by province -> city -> stores
+      const structuredData = allStores.reduce((acc: any, store) => {
+        const province = store.province || 'Unknown';
+        const city = store.city || 'Unknown';
+        
+        if (!acc[province]) {
+          acc[province] = {
+            provinceName: province,
+            totalStores: 0,
+            cities: {}
+          };
+        }
+        
+        if (!acc[province].cities[city]) {
+          acc[province].cities[city] = {
+            cityName: city,
+            stores: [],
+            storeCount: 0
+          };
+        }
+        
+        acc[province].cities[city].stores.push(store);
+        acc[province].cities[city].storeCount++;
+        acc[province].totalStores++;
+        
+        return acc;
+      }, {});
+
+      // Convert to array format for easier frontend consumption
+      const structuredArray = Object.values(structuredData).map((province: any) => ({
+        ...province,
+        cities: Object.values(province.cities)
+      }));
+
+      // Sort provinces by store count (descending)
+      structuredArray.sort((a: any, b: any) => b.totalStores - a.totalStores);
+
+      res.json({
+        totalProvinces: structuredArray.length,
+        totalStores: allStores.length,
+        provinces: structuredArray
+      });
+    } catch (error) {
+      console.error("Error fetching structured hardware stores:", error);
+      res.status(500).json({ message: "Failed to fetch structured hardware stores" });
+    }
+  });
+
   app.get("/api/ai-suggestions", async (req, res) => {
     try {
       const suggestions = await storage.getAiOrderSuggestions();
@@ -1063,44 +1211,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let totalRows = jsonData.length;
           const errors = [];
 
-          // Process hardware stores with real column names from your Excel files
-          console.log(`Processing ${jsonData.length} rows of data...`);
+          // Auto-detect Excel structure and standardize all formats
+          console.log(`Processing ${jsonData.length} rows from ${file.originalname}...`);
+          
+          // Detect column structure from first few rows
+          const detectedColumns = detectExcelStructure(jsonData.slice(0, 5));
+          console.log(`Detected structure for ${file.originalname}:`, detectedColumns);
+          
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
             
             try {
-              // Map actual Excel column names to database fields
-              const storeName = row['STORE NAME'] || row['Name'] || row['CUSTOMER NAME'] || row.storeName || row.name;
+              // Extract store data using flexible mapping
+              const storeData = extractStoreData(row, detectedColumns, i);
               
-              if (i < 3) {
-                console.log(`Row ${i + 1} sample:`, { storeName, keys: Object.keys(row) });
-              }
-              
-              if (storeName && storeName.toString().trim() !== '' && storeName !== 'STORE NAME') {
-                const customerNumber = row['CUSTOMER NUMBER'] ? row['CUSTOMER NUMBER'].toString().trim() : '';
+              if (storeData && storeData.storeName && storeData.storeName !== 'STORE NAME') {
+                // Standardize province and city naming
+                const standardizedData = standardizeLocationData(storeData);
+                
+                // Generate unique store code to avoid duplicates
+                const uniqueStoreCode = `${sessionId}_${i}_${Date.now()}`;
+                
                 const storeToCreate = {
-                  storeCode: customerNumber || `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                  storeName: storeName.toString().trim(),
-                  address: (row['STREET ADDRESS'] || row.address || '').toString(),
-                  contactPerson: (row['CUSTOMER NAME'] || row['Contact Name'] || row.contactPerson || '').toString(),
-                  phone: customerNumber,
-                  email: row['EMAIL'] || row.email || null,
-                  province: (row['PROVINCE'] || row.province || 'Unknown').toString(),
-                  city: (row['CITY'] || row['AREA'] || row.city || '').toString(),
+                  storeCode: uniqueStoreCode,
+                  storeName: standardizedData.storeName,
+                  address: standardizedData.address,
+                  contactPerson: standardizedData.contactPerson,
+                  phone: standardizedData.phone,
+                  email: standardizedData.email,
+                  province: standardizedData.province,
+                  city: standardizedData.city,
                   creditLimit: '0.00',
-                  storeType: (row['TYPE OF CLIENT'] || row['GROUP'] || 'hardware').toString(),
+                  storeType: standardizedData.storeType,
                   isActive: true
                 };
 
-                await storage.createHardwareStore(storeToCreate);
+                // Store in Excel-specific tracking table first
+                await storage.createHardwareStoreFromExcel({
+                  uploadId: sessionId,
+                  storeName: standardizedData.storeName,
+                  storeAddress: standardizedData.address,
+                  cityTown: standardizedData.city,
+                  province: standardizedData.province,
+                  contactPerson: standardizedData.contactPerson,
+                  phoneNumber: standardizedData.phone,
+                  repName: '',
+                  visitFrequency: 'monthly',
+                  mappedToCornex: false
+                });
+
+                // Check if store already exists to avoid duplicates
+                const existingStore = await storage.getHardwareStoresByProvince(standardizedData.province);
+                const isDuplicate = existingStore.some(store => 
+                  store.storeName.toLowerCase() === standardizedData.storeName.toLowerCase() &&
+                  store.city.toLowerCase() === standardizedData.city.toLowerCase()
+                );
+
+                if (!isDuplicate) {
+                  await storage.createHardwareStore(storeToCreate);
+                } else {
+                  console.log(`Skipping duplicate store: ${standardizedData.storeName} in ${standardizedData.city}`);
+                }
                 validRows++;
                 totalImported++;
                 
                 if (validRows <= 5) {
-                  console.log(`✅ Imported store: ${storeName} in ${storeToCreate.city}, ${storeToCreate.province}`);
+                  console.log(`✅ Imported: ${standardizedData.storeName} in ${standardizedData.city}, ${standardizedData.province}`);
                 }
-              } else if (storeName) {
-                console.log(`Skipping header or empty row ${i + 1}:`, storeName);
               }
             } catch (rowError) {
               console.error(`Error processing row ${i + 1}:`, rowError.message);
