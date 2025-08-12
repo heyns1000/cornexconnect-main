@@ -623,6 +623,130 @@ export const salesRepRoutesFromExcelRelations = relations(salesRepRoutesFromExce
 // Excel upload schemas
 export const insertExcelUploadSchema = createInsertSchema(excelUploads).omit({ id: true, uploadedAt: true });
 export const insertHardwareStoreFromExcelSchema = createInsertSchema(hardwareStoresFromExcel).omit({ id: true, createdAt: true });
+
+// Product Labeling and Inserts Library System
+export const productLabels = pgTable("product_labels", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  productId: varchar("product_id").references(() => products.id),
+  category: text("category").notNull(), // product_label, insert_card, packaging_label, barcode_label, safety_label
+  labelType: text("label_type").notNull(), // standard, custom, regulatory, promotional
+  fileUrl: text("file_url").notNull(), // Object storage path to PDF
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  printSize: text("print_size").notNull(), // A4, A5, 4x6, custom
+  printOrientation: text("print_orientation").notNull().default("portrait"), // portrait, landscape
+  printQuality: text("print_quality").notNull().default("high"), // draft, normal, high, photo
+  colorMode: text("color_mode").notNull().default("color"), // bw, color
+  copies: integer("copies").default(1),
+  isActive: boolean("is_active").default(true),
+  version: text("version").default("1.0"),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const printers = pgTable("printers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  model: text("model"),
+  manufacturer: text("manufacturer"),
+  ipAddress: text("ip_address").notNull(),
+  macAddress: text("mac_address"),
+  location: text("location").notNull(),
+  department: text("department"),
+  printerType: text("printer_type").notNull(), // laser, inkjet, thermal, dot_matrix
+  connectionType: text("connection_type").notNull().default("wifi"), // wifi, ethernet, usb
+  supportedSizes: jsonb("supported_sizes").notNull(), // ["A4", "A5", "4x6"]
+  capabilities: jsonb("capabilities").notNull(), // {"color": true, "duplex": true, "staple": false}
+  status: text("status").notNull().default("offline"), // online, offline, printing, error, maintenance
+  paperLevel: integer("paper_level").default(100), // Percentage
+  tonerLevel: integer("toner_level").default(100), // Percentage
+  isDefault: boolean("is_default").default(false),
+  isActive: boolean("is_active").default(true),
+  lastPingAt: timestamp("last_ping_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const printJobs = pgTable("print_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  labelId: varchar("label_id").notNull().references(() => productLabels.id),
+  printerId: varchar("printer_id").notNull().references(() => printers.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  jobName: text("job_name").notNull(),
+  copies: integer("copies").notNull().default(1),
+  printSize: text("print_size").notNull(),
+  printOrientation: text("print_orientation").notNull().default("portrait"),
+  printQuality: text("print_quality").notNull().default("normal"),
+  colorMode: text("color_mode").notNull().default("color"),
+  status: text("status").notNull().default("queued"), // queued, printing, completed, failed, cancelled
+  priority: text("priority").notNull().default("normal"), // low, normal, high, urgent
+  estimatedPages: integer("estimated_pages").default(1),
+  actualPages: integer("actual_pages").default(0),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"), // Additional print settings
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const labelTemplates = pgTable("label_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // product_info, pricing, promotional, regulatory, custom
+  templateType: text("template_type").notNull(), // pdf_template, design_template
+  templateUrl: text("template_url").notNull(), // Object storage path
+  previewUrl: text("preview_url"), // Preview image path
+  fields: jsonb("fields").notNull(), // Editable fields configuration
+  defaultValues: jsonb("default_values"), // Default field values
+  printSettings: jsonb("print_settings").notNull(), // Size, orientation, margins
+  isPublic: boolean("is_public").default(false), // Available to all users
+  usageCount: integer("usage_count").default(0),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Relations for product labeling
+export const productLabelsRelations = relations(productLabels, ({ one, many }) => ({
+  product: one(products, { fields: [productLabels.productId], references: [products.id] }),
+  creator: one(users, { fields: [productLabels.createdBy], references: [users.id] }),
+  printJobs: many(printJobs),
+}));
+
+export const printersRelations = relations(printers, ({ many }) => ({
+  printJobs: many(printJobs),
+}));
+
+export const printJobsRelations = relations(printJobs, ({ one }) => ({
+  label: one(productLabels, { fields: [printJobs.labelId], references: [productLabels.id] }),
+  printer: one(printers, { fields: [printJobs.printerId], references: [printers.id] }),
+  user: one(users, { fields: [printJobs.userId], references: [users.id] }),
+}));
+
+export const labelTemplatesRelations = relations(labelTemplates, ({ one }) => ({
+  creator: one(users, { fields: [labelTemplates.createdBy], references: [users.id] }),
+}));
+
+// Product labeling insert schemas
+export const insertProductLabelSchema = createInsertSchema(productLabels).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPrinterSchema = createInsertSchema(printers).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertPrintJobSchema = createInsertSchema(printJobs).omit({ id: true, createdAt: true });
+export const insertLabelTemplateSchema = createInsertSchema(labelTemplates).omit({ id: true, createdAt: true, updatedAt: true });
+
+// Product labeling types
+export type ProductLabel = typeof productLabels.$inferSelect;
+export type InsertProductLabel = z.infer<typeof insertProductLabelSchema>;
+export type Printer = typeof printers.$inferSelect;
+export type InsertPrinter = z.infer<typeof insertPrinterSchema>;
+export type PrintJob = typeof printJobs.$inferSelect;
+export type InsertPrintJob = z.infer<typeof insertPrintJobSchema>;
+export type LabelTemplate = typeof labelTemplates.$inferSelect;
+export type InsertLabelTemplate = z.infer<typeof insertLabelTemplateSchema>;
+
 export const insertSalesRepRouteFromExcelSchema = createInsertSchema(salesRepRoutesFromExcel).omit({ id: true, createdAt: true });
 
 // Excel upload types

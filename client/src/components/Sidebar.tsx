@@ -17,7 +17,8 @@ import {
   Store,
   Building2,
   User,
-  LogOut
+  LogOut,
+  Tag
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { name: "Extended Automation", href: "/automation", icon: Settings },
     { name: "Bulk Import", href: "/bulk-import", icon: Upload },
     { name: "Business Intelligence", href: "/analytics", icon: TrendingUp },
+    { name: "Product Labels", href: "/product-labels", icon: Tag },
     { name: "User Management", href: "/user-management", icon: User },
     { name: "Inventory Upload", href: "/inventory-upload", icon: Upload },
     { name: "Audit Trail", href: "/audit-trail", icon: FileText },

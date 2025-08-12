@@ -14,8 +14,13 @@ import {
   insertPurchaseOrderSchema,
   insertPurchaseOrderItemSchema,
   insertPoStatusHistorySchema,
-  insertPoDocumentSchema
+  insertPoDocumentSchema,
+  insertProductLabelSchema,
+  insertPrinterSchema,
+  insertPrintJobSchema,
+  insertLabelTemplateSchema
 } from "@shared/schema";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
@@ -2204,6 +2209,209 @@ const addBulkImportRoutes = (app: Express) => {
       res.status(500).json({ error: "Failed to fetch session details" });
     }
   });
+
+  // Product Labeling and Inserts Library API Routes
+  const objectStorageService = new ObjectStorageService();
+
+  // Get all product labels
+  app.get("/api/product-labels", async (req, res) => {
+    try {
+      const labels = await storage.getProductLabels();
+      res.json(labels);
+    } catch (error) {
+      console.error("Error fetching product labels:", error);
+      res.status(500).json({ error: "Failed to fetch product labels" });
+    }
+  });
+
+  // Create a new product label
+  app.post("/api/product-labels", async (req, res) => {
+    try {
+      const validatedData = insertProductLabelSchema.parse(req.body);
+      const label = await storage.createProductLabel(validatedData);
+      res.status(201).json(label);
+    } catch (error) {
+      console.error("Error creating product label:", error);
+      res.status(500).json({ error: "Failed to create product label" });
+    }
+  });
+
+  // Get upload URL for product label PDF
+  app.post("/api/product-labels/upload-url", async (req, res) => {
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error generating upload URL:", error);
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  });
+
+  // Update product label with file information after upload
+  app.put("/api/product-labels/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      if (req.body.fileUrl) {
+        req.body.fileUrl = objectStorageService.normalizeObjectEntityPath(req.body.fileUrl);
+      }
+      const validatedData = insertProductLabelSchema.partial().parse(req.body);
+      const label = await storage.updateProductLabel(id, validatedData);
+      res.json(label);
+    } catch (error) {
+      console.error("Error updating product label:", error);
+      res.status(500).json({ error: "Failed to update product label" });
+    }
+  });
+
+  // Delete product label
+  app.delete("/api/product-labels/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteProductLabel(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting product label:", error);
+      res.status(500).json({ error: "Failed to delete product label" });
+    }
+  });
+
+  // Get all printers
+  app.get("/api/printers", async (req, res) => {
+    try {
+      const printers = await storage.getPrinters();
+      res.json(printers);
+    } catch (error) {
+      console.error("Error fetching printers:", error);
+      res.status(500).json({ error: "Failed to fetch printers" });
+    }
+  });
+
+  // Add a new printer
+  app.post("/api/printers", async (req, res) => {
+    try {
+      const validatedData = insertPrinterSchema.parse(req.body);
+      const printer = await storage.createPrinter(validatedData);
+      res.status(201).json(printer);
+    } catch (error) {
+      console.error("Error adding printer:", error);
+      res.status(500).json({ error: "Failed to add printer" });
+    }
+  });
+
+  // Update printer status or details
+  app.put("/api/printers/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertPrinterSchema.partial().parse(req.body);
+      const printer = await storage.updatePrinter(id, validatedData);
+      res.json(printer);
+    } catch (error) {
+      console.error("Error updating printer:", error);
+      res.status(500).json({ error: "Failed to update printer" });
+    }
+  });
+
+  // Create a print job
+  app.post("/api/print-jobs", async (req, res) => {
+    try {
+      const validatedData = insertPrintJobSchema.parse(req.body);
+      const printJob = await storage.createPrintJob(validatedData);
+      res.status(201).json(printJob);
+    } catch (error) {
+      console.error("Error creating print job:", error);
+      res.status(500).json({ error: "Failed to create print job" });
+    }
+  });
+
+  // Get print jobs for a user or printer
+  app.get("/api/print-jobs", async (req, res) => {
+    try {
+      const printerId = req.query.printerId as string;
+      const userId = req.query.userId as string;
+      
+      let jobs;
+      if (printerId) {
+        jobs = await storage.getPrintJobsByPrinter(printerId);
+      } else if (userId) {
+        jobs = await storage.getPrintJobsByUser(userId);
+      } else {
+        jobs = await storage.getPrintJobs();
+      }
+      
+      res.json(jobs);
+    } catch (error) {
+      console.error("Error fetching print jobs:", error);
+      res.status(500).json({ error: "Failed to fetch print jobs" });
+    }
+  });
+
+  // Update print job status
+  app.patch("/api/print-jobs/:id/status", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const job = await storage.updatePrintJobStatus(id, status);
+      res.json(job);
+    } catch (error) {
+      console.error("Error updating print job status:", error);
+      res.status(500).json({ error: "Failed to update print job status" });
+    }
+  });
+
+  // Serve PDF files from object storage
+  app.get("/objects/:objectPath(*)", async (req, res) => {
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving file:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      res.status(500).json({ error: "Failed to serve file" });
+    }
+  });
+
+  // Public object serving for assets
+  app.get("/public-objects/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      await objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error searching for public object:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get label templates
+  app.get("/api/label-templates", async (req, res) => {
+    try {
+      const templates = await storage.getLabelTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching label templates:", error);
+      res.status(500).json({ error: "Failed to fetch label templates" });
+    }
+  });
+
+  // Create label template
+  app.post("/api/label-templates", async (req, res) => {
+    try {
+      const validatedData = insertLabelTemplateSchema.parse(req.body);
+      const template = await storage.createLabelTemplate(validatedData);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating label template:", error);
+      res.status(500).json({ error: "Failed to create label template" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
 };
 
 // Async file processing function

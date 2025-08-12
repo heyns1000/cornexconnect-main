@@ -33,7 +33,12 @@ import {
   type PoDocument, type InsertPoDocument,
   type BulkImportSession, type InsertBulkImportSession,
   type CompanySettings, type InsertCompanySettings,
-  type UserAuditTrail, type InsertUserAuditTrail
+  type UserAuditTrail, type InsertUserAuditTrail,
+  productLabels, printers, printJobs, labelTemplates,
+  type ProductLabel, type InsertProductLabel,
+  type Printer, type InsertPrinter,
+  type PrintJob, type InsertPrintJob,
+  type LabelTemplate, type InsertLabelTemplate
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc, asc, and, gte, lte, ilike, or } from "drizzle-orm";
@@ -51,6 +56,33 @@ export interface IStorage {
   // Audit Trail (Database-first implementation)
   getAuditLogs(filters?: any): Promise<UserAuditTrail[]>;
   createAuditLog(log: InsertUserAuditTrail): Promise<UserAuditTrail>;
+
+  // Product Labeling System
+  getProductLabels(): Promise<ProductLabel[]>;
+  getProductLabel(id: string): Promise<ProductLabel | undefined>;
+  createProductLabel(label: InsertProductLabel): Promise<ProductLabel>;
+  updateProductLabel(id: string, label: Partial<InsertProductLabel>): Promise<ProductLabel>;
+  deleteProductLabel(id: string): Promise<boolean>;
+  
+  // Printers
+  getPrinters(): Promise<Printer[]>;
+  getPrinter(id: string): Promise<Printer | undefined>;
+  createPrinter(printer: InsertPrinter): Promise<Printer>;
+  updatePrinter(id: string, printer: Partial<InsertPrinter>): Promise<Printer>;
+  deletePrinter(id: string): Promise<boolean>;
+  
+  // Print Jobs
+  getPrintJobs(): Promise<PrintJob[]>;
+  getPrintJob(id: string): Promise<PrintJob | undefined>;
+  getPrintJobsByPrinter(printerId: string): Promise<PrintJob[]>;
+  getPrintJobsByUser(userId: string): Promise<PrintJob[]>;
+  createPrintJob(job: InsertPrintJob): Promise<PrintJob>;
+  updatePrintJobStatus(id: string, status: string): Promise<PrintJob>;
+  
+  // Label Templates
+  getLabelTemplates(): Promise<LabelTemplate[]>;
+  getLabelTemplate(id: string): Promise<LabelTemplate | undefined>;
+  createLabelTemplate(template: InsertLabelTemplate): Promise<LabelTemplate>;
   // Users (Replit Auth compatible)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
@@ -1405,6 +1437,57 @@ class MemoryStorage implements IStorage {
     ];
   }
 
+  // Product Labeling System - In-memory arrays
+  private productLabels: ProductLabel[] = [];
+  private printers: Printer[] = [
+    {
+      id: "demo_printer_1",
+      name: "Main Office Printer",
+      model: "HP LaserJet Pro M404dn",
+      manufacturer: "HP",
+      ipAddress: "192.168.1.100",
+      location: "Main Office",
+      department: "Administration",
+      printerType: "laser",
+      connectionType: "wifi",
+      status: "online",
+      isDefault: true,
+      paperLevel: 85,
+      supportedSizes: ["A4", "A5", "4x6"],
+      capabilities: {
+        color: false,
+        duplex: true,
+        staple: false
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: "demo_printer_2", 
+      name: "Warehouse Color Printer",
+      model: "Canon PIXMA G7020",
+      manufacturer: "Canon",
+      ipAddress: "192.168.1.101",
+      location: "Warehouse",
+      department: "Production",
+      printerType: "inkjet",
+      connectionType: "wifi",
+      status: "online",
+      isDefault: false,
+      paperLevel: 72,
+      supportedSizes: ["A4", "A5"],
+      capabilities: {
+        color: true,
+        duplex: true,
+        staple: false
+      },
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+  private printJobs: PrintJob[] = [];
+  private labelTemplates: LabelTemplate[] = [];
+
   // Stub implementations for all required methods  
   async getUser(id: string): Promise<User | undefined> { 
     return this.users.find(u => u.id === id);
@@ -1435,6 +1518,155 @@ class MemoryStorage implements IStorage {
   }
   async getUserByUsername(username: string): Promise<User | undefined> { return undefined; }
   async createUser(user: InsertUser): Promise<User> { throw new Error("Database temporarily unavailable"); }
+
+  // Product Labeling System Methods
+  async getProductLabels(): Promise<ProductLabel[]> {
+    return [...this.productLabels].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getProductLabel(id: string): Promise<ProductLabel | undefined> {
+    return this.productLabels.find(label => label.id === id);
+  }
+
+  async createProductLabel(labelData: InsertProductLabel): Promise<ProductLabel> {
+    const newLabel: ProductLabel = {
+      id: `label_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...labelData,
+      version: 1,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.productLabels.push(newLabel);
+    return newLabel;
+  }
+
+  async updateProductLabel(id: string, labelData: Partial<InsertProductLabel>): Promise<ProductLabel> {
+    const index = this.productLabels.findIndex(label => label.id === id);
+    if (index === -1) throw new Error("Product label not found");
+    
+    this.productLabels[index] = {
+      ...this.productLabels[index],
+      ...labelData,
+      updatedAt: new Date(),
+    };
+    return this.productLabels[index];
+  }
+
+  async deleteProductLabel(id: string): Promise<boolean> {
+    const index = this.productLabels.findIndex(label => label.id === id);
+    if (index === -1) return false;
+    this.productLabels.splice(index, 1);
+    return true;
+  }
+
+  // Printer Methods
+  async getPrinters(): Promise<Printer[]> {
+    return [...this.printers].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getPrinter(id: string): Promise<Printer | undefined> {
+    return this.printers.find(printer => printer.id === id);
+  }
+
+  async createPrinter(printerData: InsertPrinter): Promise<Printer> {
+    const newPrinter: Printer = {
+      id: `printer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...printerData,
+      status: "offline",
+      isDefault: false,
+      paperLevel: 100,
+      supportedSizes: printerData.supportedSizes || ["A4"],
+      capabilities: printerData.capabilities || { color: true, duplex: true, staple: false },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.printers.push(newPrinter);
+    return newPrinter;
+  }
+
+  async updatePrinter(id: string, printerData: Partial<InsertPrinter>): Promise<Printer> {
+    const index = this.printers.findIndex(printer => printer.id === id);
+    if (index === -1) throw new Error("Printer not found");
+    
+    this.printers[index] = {
+      ...this.printers[index],
+      ...printerData,
+      updatedAt: new Date(),
+    };
+    return this.printers[index];
+  }
+
+  async deletePrinter(id: string): Promise<boolean> {
+    const index = this.printers.findIndex(printer => printer.id === id);
+    if (index === -1) return false;
+    this.printers.splice(index, 1);
+    return true;
+  }
+
+  // Print Job Methods
+  async getPrintJobs(): Promise<PrintJob[]> {
+    return [...this.printJobs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getPrintJob(id: string): Promise<PrintJob | undefined> {
+    return this.printJobs.find(job => job.id === id);
+  }
+
+  async getPrintJobsByPrinter(printerId: string): Promise<PrintJob[]> {
+    return this.printJobs.filter(job => job.printerId === printerId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getPrintJobsByUser(userId: string): Promise<PrintJob[]> {
+    return this.printJobs.filter(job => job.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createPrintJob(jobData: InsertPrintJob): Promise<PrintJob> {
+    const newJob: PrintJob = {
+      id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...jobData,
+      status: "pending",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.printJobs.push(newJob);
+    return newJob;
+  }
+
+  async updatePrintJobStatus(id: string, status: string): Promise<PrintJob> {
+    const index = this.printJobs.findIndex(job => job.id === id);
+    if (index === -1) throw new Error("Print job not found");
+    
+    this.printJobs[index] = {
+      ...this.printJobs[index],
+      status,
+      updatedAt: new Date(),
+    };
+    return this.printJobs[index];
+  }
+
+  // Label Template Methods
+  async getLabelTemplates(): Promise<LabelTemplate[]> {
+    return [...this.labelTemplates].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  async getLabelTemplate(id: string): Promise<LabelTemplate | undefined> {
+    return this.labelTemplates.find(template => template.id === id);
+  }
+
+  async createLabelTemplate(templateData: InsertLabelTemplate): Promise<LabelTemplate> {
+    const newTemplate: LabelTemplate = {
+      id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...templateData,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.labelTemplates.push(newTemplate);
+    return newTemplate;
+  }
   
   // In-memory storage arrays
   private users: User[] = [];
@@ -1887,6 +2119,99 @@ class MemoryStorage implements IStorage {
   async createAuditLog(log: InsertUserAuditTrail): Promise<UserAuditTrail> {
     const [created] = await db.insert(userAuditTrail).values(log).returning();
     return created;
+  }
+
+  // Product Labeling System - Database implementation
+  async getProductLabels(): Promise<ProductLabel[]> {
+    return await db.select().from(productLabels).orderBy(desc(productLabels.createdAt));
+  }
+
+  async getProductLabel(id: string): Promise<ProductLabel | undefined> {
+    const [label] = await db.select().from(productLabels).where(eq(productLabels.id, id));
+    return label || undefined;
+  }
+
+  async createProductLabel(labelData: InsertProductLabel): Promise<ProductLabel> {
+    const [label] = await db.insert(productLabels).values(labelData).returning();
+    return label;
+  }
+
+  async updateProductLabel(id: string, labelData: Partial<InsertProductLabel>): Promise<ProductLabel> {
+    const [label] = await db.update(productLabels).set(labelData).where(eq(productLabels.id, id)).returning();
+    return label;
+  }
+
+  async deleteProductLabel(id: string): Promise<boolean> {
+    const result = await db.delete(productLabels).where(eq(productLabels.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Printer Methods - Database implementation  
+  async getPrinters(): Promise<Printer[]> {
+    return await db.select().from(printers).orderBy(asc(printers.name));
+  }
+
+  async getPrinter(id: string): Promise<Printer | undefined> {
+    const [printer] = await db.select().from(printers).where(eq(printers.id, id));
+    return printer || undefined;
+  }
+
+  async createPrinter(printerData: InsertPrinter): Promise<Printer> {
+    const [printer] = await db.insert(printers).values(printerData).returning();
+    return printer;
+  }
+
+  async updatePrinter(id: string, printerData: Partial<InsertPrinter>): Promise<Printer> {
+    const [printer] = await db.update(printers).set(printerData).where(eq(printers.id, id)).returning();
+    return printer;
+  }
+
+  async deletePrinter(id: string): Promise<boolean> {
+    const result = await db.delete(printers).where(eq(printers.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Print Job Methods - Database implementation
+  async getPrintJobs(): Promise<PrintJob[]> {
+    return await db.select().from(printJobs).orderBy(desc(printJobs.createdAt));
+  }
+
+  async getPrintJob(id: string): Promise<PrintJob | undefined> {
+    const [job] = await db.select().from(printJobs).where(eq(printJobs.id, id));
+    return job || undefined;
+  }
+
+  async getPrintJobsByPrinter(printerId: string): Promise<PrintJob[]> {
+    return await db.select().from(printJobs).where(eq(printJobs.printerId, printerId)).orderBy(desc(printJobs.createdAt));
+  }
+
+  async getPrintJobsByUser(userId: string): Promise<PrintJob[]> {
+    return await db.select().from(printJobs).where(eq(printJobs.userId, userId)).orderBy(desc(printJobs.createdAt));
+  }
+
+  async createPrintJob(jobData: InsertPrintJob): Promise<PrintJob> {
+    const [job] = await db.insert(printJobs).values(jobData).returning();
+    return job;
+  }
+
+  async updatePrintJobStatus(id: string, status: string): Promise<PrintJob> {
+    const [job] = await db.update(printJobs).set({ status }).where(eq(printJobs.id, id)).returning();
+    return job;
+  }
+
+  // Label Template Methods - Database implementation
+  async getLabelTemplates(): Promise<LabelTemplate[]> {
+    return await db.select().from(labelTemplates).orderBy(asc(labelTemplates.name));
+  }
+
+  async getLabelTemplate(id: string): Promise<LabelTemplate | undefined> {
+    const [template] = await db.select().from(labelTemplates).where(eq(labelTemplates.id, id));
+    return template || undefined;
+  }
+
+  async createLabelTemplate(templateData: InsertLabelTemplate): Promise<LabelTemplate> {
+    const [template] = await db.insert(labelTemplates).values(templateData).returning();
+    return template;
   }
 }
 
