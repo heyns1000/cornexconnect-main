@@ -60,32 +60,29 @@ export default function BulkImport() {
         formData.append(`files`, file);
       });
       
-      const response = await fetch("/api/bulk-import/process", {
+      const response = await fetch("/api/bulk-import/upload", {
         method: "POST",
         body: formData,
       });
       return response.json();
     },
     onSuccess: (data) => {
+      console.log("Upload success:", data);
       toast({
         title: "Import Started",
         description: `Processing ${importFiles.length} files...`,
       });
       
-      // Create new session
-      const session: ImportSession = {
-        id: data.sessionId,
-        name: `Import Session ${new Date().toLocaleString()}`,
-        totalFiles: importFiles.length,
-        processedFiles: 0,
-        status: "active",
-        createdAt: new Date().toISOString(),
-        files: importFiles
-      };
-      setCurrentSession(session);
+      // Start polling session status if we have a session ID
+      if (data.sessionId) {
+        startProgressPolling(data.sessionId);
+      }
       
-      // Start polling for progress
-      startProgressPolling(data.sessionId);
+      // Update history
+      queryClient.invalidateQueries({ queryKey: ["/api/bulk-import/history"] });
+      
+      // Clear files from UI after successful upload
+      setImportFiles([]);
     },
     onError: (error) => {
       toast({
@@ -126,7 +123,7 @@ export default function BulkImport() {
   // Clear all files
   const clearAll = async () => {
     try {
-      await apiRequest("/api/bulk-import/clear", { method: "POST" });
+      await fetch("/api/bulk-import/clear", { method: "POST" });
       setImportFiles([]);
       setCurrentSession(null);
       toast({
@@ -206,7 +203,7 @@ export default function BulkImport() {
 
     session.files.forEach(file => {
       csvData.push([
-        file.fileName || 'Unknown',
+        file.file.name || 'Unknown',
         file.status,
         `${file.progress}%`,
         file.result?.totalRows?.toString() || '0',
@@ -496,7 +493,7 @@ export default function BulkImport() {
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2">
                                   {getStatusIcon(file.status)}
-                                  <span className="font-medium">{file.fileName || `File ${index + 1}`}</span>
+                                  <span className="font-medium">{file.file.name || `File ${index + 1}`}</span>
                                 </div>
                                 <Badge variant="outline">{file.status}</Badge>
                               </div>
@@ -736,7 +733,7 @@ export default function BulkImport() {
                     {selectedSessionDetails.files.map((file, index) => (
                       <div key={file.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium">{file.fileName || `File ${index + 1}`}</span>
+                          <span className="font-medium">{file.file.name || `File ${index + 1}`}</span>
                           <div className="flex items-center gap-2">
                             {getStatusIcon(file.status)}
                             <Badge variant="outline">{file.status}</Badge>
