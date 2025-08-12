@@ -1252,8 +1252,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const row = jsonData[i];
             
             try {
-              // Extract store data using flexible mapping
-              const storeData = extractStoreData(row, detectedColumns, i);
+              // For Homemart format, directly extract from row array
+              let storeData = null;
+              if (Array.isArray(row) && row[0] && typeof row[0] === 'string' && row[0].trim() !== '') {
+                storeData = {
+                  storeName: row[0].trim(),
+                  province: row[1] || 'Unknown',
+                  address: null,
+                  city: null,
+                  contactPerson: null,
+                  phone: null,
+                  email: null,
+                  storeType: 'hardware'
+                };
+              } else {
+                // Fallback to flexible mapping for other formats
+                storeData = extractStoreData(row, detectedColumns, i);
+              }
               
               if (storeData && storeData.storeName && 
                   storeData.storeName !== 'STORE NAME' && 
