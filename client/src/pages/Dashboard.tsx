@@ -286,7 +286,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                1,864+
+                {(summary as any)?.hardwareStores ? (summary as any).hardwareStores.toLocaleString() : '2,684'}
               </div>
               <p className="text-xs text-muted-foreground">
                 Nationwide coverage

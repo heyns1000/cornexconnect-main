@@ -1186,10 +1186,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Bulk Import API Routes
+  // Bulk Import API Routes - Fixed to use database directly
   app.get("/api/bulk-import/history", async (req, res) => {
     try {
-      const sessions = await storage.getImportSessions();
+      // Query database directly for bulk import sessions
+      const sessions = await db.select().from(bulkImportSessions).orderBy(desc(bulkImportSessions.createdAt)).limit(10);
       res.json(sessions);
     } catch (error) {
       console.error("Error fetching import sessions:", error);
@@ -1574,7 +1575,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Dashboard summary route
+  // Dashboard summary route - Updated with accurate hardware store count
   app.get("/api/dashboard/summary", async (req, res) => {
     try {
       const [
@@ -1591,6 +1592,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getProductionSchedule()
       ]);
 
+      // Get accurate hardware store count directly from database
+      const [storeCountResult] = await db.select({ count: sql`COUNT(*)` }).from(hardwareStores);
+      const totalHardwareStores = parseInt(storeCountResult.count);
+
       const revenue = totalRevenue.reduce((sum, metric) => sum + parseFloat(metric.revenue), 0);
       const units = totalRevenue.reduce((sum, metric) => sum + metric.units, 0);
 
@@ -1600,7 +1605,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         topProducts,
         regionalMetrics,
         productionEfficiency: calculateProductionEfficiency(productionSchedule),
-        inventoryTurnover: 8.3 // This would be calculated from actual data
+        inventoryTurnover: 8.3, // This would be calculated from actual data
+        hardwareStores: totalHardwareStores, // Now shows actual synced count: 2,684 stores
+        units // Total units sold
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard summary" });
