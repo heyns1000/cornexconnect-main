@@ -1063,33 +1063,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let totalRows = jsonData.length;
           const errors = [];
 
-          // Process hardware stores
+          // Process hardware stores with real column names from your Excel files
+          console.log(`Processing ${jsonData.length} rows of data...`);
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
             
             try {
-              // Process hardware store data directly
-              if (row.storeName || row.name || row.store_name) {
+              // Map actual Excel column names to database fields
+              const storeName = row['STORE NAME'] || row['Name'] || row['CUSTOMER NAME'] || row.storeName || row.name;
+              
+              if (i < 3) {
+                console.log(`Row ${i + 1} sample:`, { storeName, keys: Object.keys(row) });
+              }
+              
+              if (storeName && storeName.toString().trim() !== '' && storeName !== 'STORE NAME') {
+                const customerNumber = row['CUSTOMER NUMBER'] ? row['CUSTOMER NUMBER'].toString().trim() : '';
                 const storeToCreate = {
-                  storeCode: row.storeCode || row.id || `store_${Date.now()}_${i}`,
-                  storeName: row.storeName || row.name || row.store_name || `Store ${i + 1}`,
-                  address: row.address || '',
-                  contactPerson: row.contactPerson || row.contact_person || '',
-                  phone: row.phone || '',
-                  email: row.email || null,
-                  province: row.province || 'Unknown',
-                  city: row.city || '',
-                  creditLimit: row.creditLimit || '0.00',
-                  storeType: row.storeType || 'hardware',
-                  isActive: row.isActive !== false
+                  storeCode: customerNumber || `store_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                  storeName: storeName.toString().trim(),
+                  address: (row['STREET ADDRESS'] || row.address || '').toString(),
+                  contactPerson: (row['CUSTOMER NAME'] || row['Contact Name'] || row.contactPerson || '').toString(),
+                  phone: customerNumber,
+                  email: row['EMAIL'] || row.email || null,
+                  province: (row['PROVINCE'] || row.province || 'Unknown').toString(),
+                  city: (row['CITY'] || row['AREA'] || row.city || '').toString(),
+                  creditLimit: '0.00',
+                  storeType: (row['TYPE OF CLIENT'] || row['GROUP'] || 'hardware').toString(),
+                  isActive: true
                 };
 
                 await storage.createHardwareStore(storeToCreate);
                 validRows++;
                 totalImported++;
+                
+                if (validRows <= 5) {
+                  console.log(`✅ Imported store: ${storeName} in ${storeToCreate.city}, ${storeToCreate.province}`);
+                }
+              } else if (storeName) {
+                console.log(`Skipping header or empty row ${i + 1}:`, storeName);
               }
             } catch (rowError) {
-              console.error(`Error processing row ${i + 1}:`, rowError);
+              console.error(`Error processing row ${i + 1}:`, rowError.message);
               errors.push(`Row ${i + 1}: ${rowError.message}`);
             }
           }
