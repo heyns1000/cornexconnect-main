@@ -34,6 +34,8 @@ import Header from "@/components/Header";
 import { FruitfulAssistChatbot, FruitfulAssistFloatingButton } from "@/components/FruitfulAssistChatbot";
 import { LoadingTransition } from "@/components/PageTransition";
 import { AnimatedCard, FadeIn } from "@/components/AnimatedComponents";
+import { MoodFloatingButton } from "@/components/MoodFloatingButton";
+import { MoodProvider } from "@/hooks/useMoodContext";
 import { useState } from "react";
 
 function Router() {
@@ -109,6 +111,9 @@ function AuthenticatedApp() {
         </main>
       </div>
       
+      {/* AI-Powered Mood Selector */}
+      <MoodFloatingButton />
+
       {/* Fruitful Assist Chatbot */}
       <FruitfulAssistFloatingButton 
         onClick={() => setChatbotOpen(true)} 
@@ -141,9 +146,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AppContent />
-        
-        <Toaster />
+        <MoodProvider>
+          <AppContent />
+          
+          <Toaster />
+        </MoodProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

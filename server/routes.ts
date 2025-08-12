@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { registerAIRoutes } from "./routes/ai";
 // import { setupAuth, isAuthenticated } from "./replitAuth"; // DISABLED FOR DEMO
 import { 
   insertProductSchema, 
@@ -330,6 +331,9 @@ const processImportFile = async (file: Express.Multer.File): Promise<{
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Replit Authentication - DISABLED FOR DEMO
   // await setupAuth(app);
+  
+  // Register AI routes
+  registerAIRoutes(app);
 
   // Initialize sample data
   await initializeSampleData();
