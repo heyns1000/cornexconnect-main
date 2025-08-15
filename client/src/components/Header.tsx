@@ -1,4 +1,4 @@
-import { Bell, RefreshCw, LogOut, User, Settings } from "lucide-react";
+import { Bell, RefreshCw, LogOut, User, Settings, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,11 +12,15 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { CURRENCIES } from "@/lib/constants";
 import { useState } from "react";
+import CountrySelector from "@/components/CountrySelector";
+import { useCountry } from "@/hooks/useCountryContext";
 
 export default function Header() {
   const { user } = useAuth();
-  const [selectedCurrency, setSelectedCurrency] = useState("ZAR");
+  const { currentCountry, currency } = useCountry();
+  const [selectedCurrency, setSelectedCurrency] = useState(currency || "ZAR");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showCountrySelector, setShowCountrySelector] = useState(false);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -45,19 +49,22 @@ export default function Header() {
           
           {/* Quick Actions */}
           <div className="flex items-center space-x-4">
-            {/* Currency Selector */}
-            <Select value={selectedCurrency} onValueChange={setSelectedCurrency}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((currency) => (
-                  <SelectItem key={currency.currency} value={currency.currency}>
-                    {currency.flag} {currency.currency}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Country Selector */}
+            <Button
+              variant="outline"
+              onClick={() => setShowCountrySelector(true)}
+              className="flex items-center space-x-2 px-3"
+            >
+              <Globe className="w-4 h-4" />
+              <span className="text-lg">{currentCountry.flag}</span>
+              <span className="font-medium">{currentCountry.name}</span>
+            </Button>
+            
+            {/* Currency Display */}
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
+              <span className="text-sm text-gray-600">Currency:</span>
+              <span className="font-medium text-emerald-600">{currentCountry.currency}</span>
+            </div>
             
             {/* Refresh Button */}
             <Button 
@@ -119,6 +126,12 @@ export default function Header() {
           </div>
         </div>
       </div>
+      
+      {/* Country Selector Modal */}
+      <CountrySelector
+        open={showCountrySelector}
+        onClose={() => setShowCountrySelector(false)}
+      />
     </header>
   );
 }

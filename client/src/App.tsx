@@ -37,6 +37,7 @@ import { LoadingTransition } from "@/components/PageTransition";
 import { AnimatedCard, FadeIn } from "@/components/AnimatedComponents";
 import { MoodFloatingButton } from "@/components/MoodFloatingButton";
 import { MoodProvider } from "@/hooks/useMoodContext";
+import { CountryProvider } from "@/hooks/useCountryContext";
 import { useState } from "react";
 
 function Router() {
@@ -148,11 +149,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <MoodProvider>
-          <AppContent />
-          
-          <Toaster />
-        </MoodProvider>
+        <CountryProvider>
+          <MoodProvider>
+            <AppContent />
+            
+            <Toaster />
+          </MoodProvider>
+        </CountryProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
