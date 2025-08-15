@@ -11,12 +11,12 @@ import AIInsightsPanel from "@/components/AIInsightsPanel";
 import { formatCurrency } from "@/lib/currency";
 import { STOCK_STATUS_COLORS } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { useCountry } from "@/hooks/useCountryContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function InventoryAI() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("30d");
   const { toast } = useToast();
-  const { translations: t } = useCountry();
+  const { t } = useTranslation();
 
   const handleOptimizeAll = () => {
     toast({

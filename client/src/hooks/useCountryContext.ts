@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Country, SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getCountryByCode } from '@/lib/i18n';
+import { translations } from '@/lib/translations';
 
 interface CountryContextType {
-  currentCountry: Country;
+  currentCountry: string;
   setCountry: (countryCode: string) => void;
-  translations: Country['translations'];
+  translations: typeof translations.en;
   currency: string;
-  phonePrefix: string;
-  timezone: string;
-  dateFormat: string;
+  flag: string;
 }
 
 const CountryContext = createContext<CountryContextType | undefined>(undefined);
@@ -20,16 +18,14 @@ export const useCountry = () => {
     console.error('CountryContext is undefined - Provider may not be properly wrapping the component');
     // Return default values instead of throwing error
     return {
-      currentCountry: DEFAULT_COUNTRY,
+      currentCountry: 'US',
       setCountry: (countryCode: string) => {
         console.warn('setCountry called outside of provider context');
         localStorage.setItem('selectedCountry', countryCode);
       },
-      translations: DEFAULT_COUNTRY.translations,
-      currency: DEFAULT_COUNTRY.currency,
-      phonePrefix: DEFAULT_COUNTRY.phonePrefix,
-      timezone: DEFAULT_COUNTRY.timezone,
-      dateFormat: DEFAULT_COUNTRY.dateFormat,
+      translations: translations.en,
+      currency: 'USD',
+      flag: '🇺🇸',
     };
   }
   return context;

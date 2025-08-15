@@ -13,14 +13,14 @@ import ProductionScheduleCalendar from "@/components/ProductionScheduleCalendar"
 import { PRODUCTION_LINES } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useCountry } from "@/hooks/useCountryContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function ProductionPlanning() {
   const [selectedLine, setSelectedLine] = useState("all");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { translations: t } = useCountry();
+  const { t } = useTranslation();
 
   const { data: schedule, isLoading } = useQuery({
     queryKey: ["/api/production-schedule"],

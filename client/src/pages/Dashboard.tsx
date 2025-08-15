@@ -26,13 +26,13 @@ import {
 import { PageTransition } from "@/components/PageTransition";
 import { TransitionHints, useTransitionHints, HINT_SEQUENCES } from "@/components/TransitionHints";
 import { AnimatePresence } from "framer-motion";
-import { useCountry } from "@/hooks/useCountryContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Dashboard() {
   const [showWelcomeHints, setShowWelcomeHints] = useState(true);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { translations, currentCountry, currency } = useCountry();
+  const { t, currentCountry, currency } = useTranslation();
   
   // Modal states
   const [addProductOpen, setAddProductOpen] = useState(false);
@@ -221,7 +221,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-              🏭 CornexConnect {translations.dashboard}
+              🏭 CornexConnect {t.dashboard}
             </h1>
             <p className="text-muted-foreground mt-2">
               Monitor your global manufacturing and distribution network
@@ -245,7 +245,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-hint="dashboard-metrics">
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{translations.totalRevenue}</CardTitle>
+              <CardTitle className="text-sm font-medium">{t.totalRevenue}</CardTitle>
               <DollarSign className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
@@ -260,7 +260,7 @@ export default function Dashboard() {
 
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{translations.activeDistributors}</CardTitle>
+              <CardTitle className="text-sm font-medium">{t.activeDistributors}</CardTitle>
               <Users className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
@@ -275,7 +275,7 @@ export default function Dashboard() {
 
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{translations.productsInCatalog}</CardTitle>
+              <CardTitle className="text-sm font-medium">{t.productsInCatalog}</CardTitle>
               <Package className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
@@ -290,7 +290,7 @@ export default function Dashboard() {
 
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{translations.hardwareStores}</CardTitle>
+              <CardTitle className="text-sm font-medium">Hardware Stores</CardTitle>
               <MapPin className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
@@ -311,10 +311,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-emerald-500" />
-{translations.regionalSalesPerformance}
+Regional Sales Performance
               </CardTitle>
               <CardDescription>
-{translations.revenueBreakdownByProvince}
+Revenue breakdown by province
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -340,10 +340,10 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-blue-500" />
-{translations.topPerformingProducts}
+Top Performing Products
               </CardTitle>
               <CardDescription>
-{translations.bestSellingProducts}
+{t.bestSellingProducts}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -359,7 +359,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">{item.quantity} {translations.units}</p>
+                    <p className="font-medium">{item.quantity} units</p>
                     <p className="text-sm text-muted-foreground">
                       {formatCurrency(item.revenue)}
                     </p>

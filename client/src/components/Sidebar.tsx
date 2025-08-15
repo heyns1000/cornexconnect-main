@@ -30,7 +30,7 @@ import { HoverLift } from "@/components/AnimatedComponents";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useCountry } from "@/hooks/useCountryContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SidebarProps {
   collapsed: boolean;
@@ -41,22 +41,22 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const [location] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { translations } = useCountry();
+  const { t } = useTranslation();
 
   const navigation = [
-    { name: translations.dashboard, href: "/", icon: LayoutDashboard },
-    { name: translations.productCatalog, href: "/catalog", icon: Package },
-    { name: translations.productionPlanning, href: "/production", icon: Factory },
-    { name: translations.inventoryAI, href: "/inventory", icon: Warehouse },
-    { name: translations.globalDistributors, href: "/distributors", icon: Users },
-    { name: translations.routeManagement, href: "/routes", icon: Route },
-    { name: translations.storeMap, href: "/store-map", icon: Map },
+    { name: t.dashboard, href: "/", icon: LayoutDashboard },
+    { name: t.productCatalog, href: "/catalog", icon: Package },
+    { name: t.productionPlanning, href: "/production", icon: Factory },
+    { name: t.inventoryAI, href: "/inventory", icon: Warehouse },
+    { name: t.globalDistributors, href: "/distributors", icon: Users },
+    { name: t.routeManagement, href: "/routes", icon: Route },
+    { name: t.storeMapVisualization, href: "/store-map", icon: Map },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "SA Logistics", href: "/logistics", icon: Truck },
-    { name: translations.factorySetup, href: "/factory-setup", icon: Factory },
+    { name: t.factorySetup, href: "/factory-setup", icon: Factory },
     { name: "Extended Automation", href: "/automation", icon: Settings },
     { name: "Bulk Import", href: "/bulk-import", icon: Upload },
-    { name: translations.businessIntelligence, href: "/analytics", icon: TrendingUp },
+    { name: t.businessIntelligence, href: "/analytics", icon: TrendingUp },
     { name: "Product Labels", href: "/product-labels", icon: Tag },
     { name: "User Management", href: "/user-management", icon: User },
     { name: "Inventory Upload", href: "/inventory-upload", icon: Upload },

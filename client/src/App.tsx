@@ -37,7 +37,7 @@ import { LoadingTransition } from "@/components/PageTransition";
 import { AnimatedCard, FadeIn } from "@/components/AnimatedComponents";
 import { MoodFloatingButton } from "@/components/MoodFloatingButton";
 import { MoodProvider } from "@/hooks/useMoodContext";
-import { CountryProvider } from "@/hooks/useCountryContext";
+// Translation system is now self-contained in useTranslation hook
 import { useState } from "react";
 
 function Router() {
@@ -149,13 +149,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CountryProvider>
-          <MoodProvider>
-            <AppContent />
-            
-            <Toaster />
-          </MoodProvider>
-        </CountryProvider>
+        <MoodProvider>
+          <AppContent />
+          
+          <Toaster />
+        </MoodProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

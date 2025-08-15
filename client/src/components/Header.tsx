@@ -13,11 +13,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { CURRENCIES } from "@/lib/constants";
 import { useState } from "react";
 import CountrySelector from "@/components/CountrySelector";
-import { useCountry } from "@/hooks/useCountryContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Header() {
   const { user } = useAuth();
-  const { currentCountry, currency } = useCountry();
+  const { currentCountry, currency, flag } = useTranslation();
   const [selectedCurrency, setSelectedCurrency] = useState(currency || "ZAR");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCountrySelector, setShowCountrySelector] = useState(false);
@@ -57,8 +57,8 @@ export default function Header() {
                 className="flex items-center space-x-2 px-3"
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-lg">{currentCountry.flag}</span>
-                <span className="font-medium">{currentCountry.name}</span>
+                <span className="text-lg">{flag}</span>
+                <span className="font-medium">{currentCountry}</span>
               </Button>
             </div>
             
