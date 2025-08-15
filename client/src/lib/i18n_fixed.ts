@@ -375,5 +375,3 @@ export const SUPPORTED_COUNTRIES: Country[] = [
 export function getCountryByCode(code: string): Country {
   return SUPPORTED_COUNTRIES.find(country => country.code === code) || SUPPORTED_COUNTRIES[0];
 }
-
-export const DEFAULT_COUNTRY = SUPPORTED_COUNTRIES[0]; // South Africa as default

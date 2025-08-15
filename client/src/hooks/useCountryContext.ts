@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { CountryConfig, getCurrentCountry, setCurrentCountry, DEFAULT_COUNTRY, getCountryByCode } from '@/lib/i18n';
+import { Country, SUPPORTED_COUNTRIES, DEFAULT_COUNTRY, getCountryByCode } from '@/lib/i18n';
 
 interface CountryContextType {
-  currentCountry: CountryConfig;
+  currentCountry: Country;
   setCountry: (countryCode: string) => void;
-  translations: CountryConfig['translations'];
+  translations: Country['translations'];
   currency: string;
   phonePrefix: string;
   timezone: string;
@@ -23,7 +23,7 @@ export const useCountry = () => {
       currentCountry: DEFAULT_COUNTRY,
       setCountry: (countryCode: string) => {
         console.warn('setCountry called outside of provider context');
-        setCurrentCountry(countryCode);
+        localStorage.setItem('selectedCountry', countryCode);
       },
       translations: DEFAULT_COUNTRY.translations,
       currency: DEFAULT_COUNTRY.currency,
@@ -40,16 +40,18 @@ interface CountryProviderProps {
 }
 
 export const CountryProvider = ({ children }: CountryProviderProps) => {
-  const [currentCountry, setCurrentCountryState] = useState<CountryConfig>(DEFAULT_COUNTRY);
+  const [currentCountry, setCurrentCountryState] = useState<Country>(DEFAULT_COUNTRY);
 
   useEffect(() => {
-    const savedCountry = getCurrentCountry();
-    setCurrentCountryState(savedCountry);
+    // Load saved country from localStorage
+    const savedCountryCode = localStorage.getItem('selectedCountry') || 'ZA';
+    const country = getCountryByCode(savedCountryCode);
+    setCurrentCountryState(country);
   }, []);
 
   const setCountry = (countryCode: string) => {
     const newCountry = getCountryByCode(countryCode);
-    setCurrentCountry(countryCode);
+    localStorage.setItem('selectedCountry', countryCode);
     setCurrentCountryState(newCountry);
     // No page reload - instant translation switching
   };
