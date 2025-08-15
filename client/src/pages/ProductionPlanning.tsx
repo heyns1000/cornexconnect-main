@@ -13,12 +13,14 @@ import ProductionScheduleCalendar from "@/components/ProductionScheduleCalendar"
 import { PRODUCTION_LINES } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useCountry } from "@/hooks/useCountryContext";
 
 export default function ProductionPlanning() {
   const [selectedLine, setSelectedLine] = useState("all");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { translations: t } = useCountry();
 
   const { data: schedule, isLoading } = useQuery({
     queryKey: ["/api/production-schedule"],
@@ -99,28 +101,28 @@ export default function ProductionPlanning() {
       <div className="bg-white border-b border-gray-200 px-8 py-6 -mx-8 -mt-8 mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Production Planning & Scheduling</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t.productionPlanning}</h2>
             <p className="text-gray-600 mt-1">AI-powered production optimization and automated scheduling</p>
           </div>
           <div className="flex items-center space-x-3">
             <Button variant="outline">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
+              {t.analytics || "Analytics"}
             </Button>
             <Button variant="outline">
               <Settings className="w-4 h-4 mr-2" />
-              Optimize
+              {t.optimize || "Optimize"}
             </Button>
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="bg-cornex-blue hover:bg-cornex-dark">
                   <Calendar className="w-4 h-4 mr-2" />
-                  Schedule Production
+                  {t.productionSchedule}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Schedule New Production</DialogTitle>
+                  <DialogTitle>{t.productionSchedule}</DialogTitle>
                 </DialogHeader>
                 <ScheduleForm 
                   products={products || []}
@@ -158,7 +160,7 @@ export default function ProductionPlanning() {
                       {line.efficiency}%
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      {currentProduction ? "Running" : "Idle"}
+                      {currentProduction ? (t.active || "Running") : (t.inactive || "Idle")}
                     </Badge>
                   </div>
                   <div className="text-sm text-gray-600">

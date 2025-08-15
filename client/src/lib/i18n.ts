@@ -149,7 +149,16 @@ const southAfricaTranslations: Translation = {
   upcomingManufacturingPlans: "Upcoming manufacturing plans",
   predictedDemandNext30Days: "Predicted demand for next 30 days",
   units: "units",
-  confidence: "Confidence"
+  confidence: "Confidence",
+  
+  // Additional interface elements
+  analytics: "Analytics",
+  optimize: "Optimize",
+  running: "Running",
+  idle: "Idle",
+  capacity: "Capacity",
+  month: "month",
+  productTypes: "product types"
 };
 
 // Complete Spanish translations (Mexico/Spain)
@@ -217,7 +226,16 @@ const spanishTranslations: Translation = {
   upcomingManufacturingPlans: "Planes de fabricación próximos",
   predictedDemandNext30Days: "Demanda prevista para los próximos 30 días",
   units: "unidades",
-  confidence: "Confianza"
+  confidence: "Confianza",
+  
+  // Additional interface elements
+  analytics: "Analíticas",
+  optimize: "Optimizar",
+  running: "Funcionando",
+  idle: "Inactivo",
+  capacity: "Capacidad",
+  month: "mes",
+  productTypes: "tipos de productos"
 };
 
 // Complete Turkish translations
@@ -285,7 +303,16 @@ const turkishTranslations: Translation = {
   upcomingManufacturingPlans: "Yaklaşan üretim planları",
   predictedDemandNext30Days: "Önümüzdeki 30 gün için öngörülen talep",
   units: "adet",
-  confidence: "Güven"
+  confidence: "Güven",
+  
+  // Additional interface elements
+  analytics: "Analitik",
+  optimize: "Optimize Et",
+  running: "Çalışıyor",
+  idle: "Boşta",
+  capacity: "Kapasite",
+  month: "ay",
+  productTypes: "ürün türleri"
 };
 
 // Complete German translations
@@ -353,7 +380,16 @@ const germanTranslations: Translation = {
   upcomingManufacturingPlans: "Anstehende Fertigungspläne",
   predictedDemandNext30Days: "Vorhergesagte Nachfrage für die nächsten 30 Tage",
   units: "Einheiten",
-  confidence: "Vertrauen"
+  confidence: "Vertrauen",
+  
+  // Additional interface elements
+  analytics: "Analytik",
+  optimize: "Optimieren",
+  running: "Läuft",
+  idle: "Leerlauf",
+  capacity: "Kapazität",
+  month: "Monat",
+  productTypes: "Produkttypen"
 };
 
 // Complete French translations
@@ -421,7 +457,16 @@ const frenchTranslations: Translation = {
   upcomingManufacturingPlans: "Plans de fabrication à venir",
   predictedDemandNext30Days: "Demande prévue pour les 30 prochains jours",
   units: "unités",
-  confidence: "Confiance"
+  confidence: "Confiance",
+  
+  // Additional interface elements
+  analytics: "Analytique",
+  optimize: "Optimiser",
+  running: "En marche",
+  idle: "Inactif",
+  capacity: "Capacité",
+  month: "mois",
+  productTypes: "types de produits"
 };
 
 // Complete Portuguese translations (Brazil)
@@ -489,7 +534,16 @@ const portugueseTranslations: Translation = {
   upcomingManufacturingPlans: "Planos de fabricação próximos",
   predictedDemandNext30Days: "Demanda prevista para os próximos 30 dias",
   units: "unidades",
-  confidence: "Confiança"
+  confidence: "Confiança",
+  
+  // Additional interface elements
+  analytics: "Análises",
+  optimize: "Otimizar",
+  running: "Executando",
+  idle: "Inativo",
+  capacity: "Capacidade",
+  month: "mês",
+  productTypes: "tipos de produtos"
 };
 
 // Complete Italian translations
@@ -557,7 +611,16 @@ const italianTranslations: Translation = {
   upcomingManufacturingPlans: "Piani di produzione imminenti",
   predictedDemandNext30Days: "Domanda prevista per i prossimi 30 giorni",
   units: "unità",
-  confidence: "Fiducia"
+  confidence: "Fiducia",
+  
+  // Additional interface elements
+  analytics: "Analisi",
+  optimize: "Ottimizza",
+  running: "In Esecuzione",
+  idle: "Inattivo",
+  capacity: "Capacità",
+  month: "mese",
+  productTypes: "tipi di prodotti"
 };
 
 // Complete Arabic translations (Egypt)
