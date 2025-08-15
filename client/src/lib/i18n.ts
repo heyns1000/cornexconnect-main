@@ -424,6 +424,142 @@ const frenchTranslations: Translation = {
   confidence: "Confiance"
 };
 
+// Complete Portuguese translations (Brazil)
+const portugueseTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Painel de Controle",
+  productCatalog: "Catálogo de Produtos",
+  productionPlanning: "Planejamento de Produção",
+  inventoryAI: "Inventário IA",
+  globalDistributors: "Distribuidores Globais",
+  businessIntelligence: "Inteligência de Negócios",
+  routeManagement: "Gerenciamento de Rotas",
+  factorySetup: "Configuração da Fábrica",
+  hardwareStores: "Lojas de Ferragens",
+  storeMap: "Mapa de Lojas",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Fabricação Cornex",
+  epsProducts: "Produtos EPS",
+  xpsProducts: "Produtos XPS",
+  qualityControl: "Controle de Qualidade",
+  
+  // Business Operations
+  salesReps: "Representantes de Vendas",
+  distributorNetwork: "Rede de Distribuição",
+  orderManagement: "Gerenciamento de Pedidos",
+  inventoryControl: "Controle de Inventário",
+  demandForecasting: "Previsão de Demanda",
+  
+  // Common Actions
+  edit: "Editar",
+  delete: "Excluir",
+  save: "Salvar",
+  cancel: "Cancelar",
+  close: "Fechar",
+  create: "Criar",
+  view: "Ver",
+  export: "Exportar",
+  import: "Importar",
+  search: "Pesquisar",
+  filter: "Filtrar",
+  
+  // Status Terms
+  active: "Ativo",
+  inactive: "Inativo",
+  pending: "Pendente",
+  completed: "Concluído",
+  inProgress: "Em Progresso",
+  
+  currency: "BRL",
+  volume: "Metros Cúbicos",
+  weight: "Quilogramas",
+  dimensions: "Milímetros",
+  
+  // Dashboard Content
+  totalRevenue: "Receita Total",
+  activeDistributors: "Distribuidores Ativos",
+  productsInCatalog: "Produtos no Catálogo",
+  regionalSalesPerformance: "Performance de Vendas Regional",
+  topPerformingProducts: "Produtos de Melhor Desempenho",
+  revenueBreakdownByProvince: "Divisão de receita por província",
+  bestSellingProducts: "Produtos Cornex mais vendidos este mês",
+  productionSchedule: "Cronograma de Produção",
+  aiDemandForecast: "Previsão de Demanda IA",
+  upcomingManufacturingPlans: "Planos de fabricação próximos",
+  predictedDemandNext30Days: "Demanda prevista para os próximos 30 dias",
+  units: "unidades",
+  confidence: "Confiança"
+};
+
+// Complete Italian translations
+const italianTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Dashboard",
+  productCatalog: "Catalogo Prodotti",
+  productionPlanning: "Pianificazione Produzione",
+  inventoryAI: "Inventario IA",
+  globalDistributors: "Distributori Globali",
+  businessIntelligence: "Business Intelligence",
+  routeManagement: "Gestione Rotte",
+  factorySetup: "Configurazione Fabbrica",
+  hardwareStores: "Ferramenta",
+  storeMap: "Mappa Negozi",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Produzione Cornex",
+  epsProducts: "Prodotti EPS",
+  xpsProducts: "Prodotti XPS",
+  qualityControl: "Controllo Qualità",
+  
+  // Business Operations
+  salesReps: "Rappresentanti Vendite",
+  distributorNetwork: "Rete Distribuzione",
+  orderManagement: "Gestione Ordini",
+  inventoryControl: "Controllo Inventario",
+  demandForecasting: "Previsione Domanda",
+  
+  // Common Actions
+  edit: "Modifica",
+  delete: "Elimina",
+  save: "Salva",
+  cancel: "Annulla",
+  close: "Chiudi",
+  create: "Crea",
+  view: "Visualizza",
+  export: "Esporta",
+  import: "Importa",
+  search: "Cerca",
+  filter: "Filtra",
+  
+  // Status Terms
+  active: "Attivo",
+  inactive: "Inattivo",
+  pending: "In attesa",
+  completed: "Completato",
+  inProgress: "In corso",
+  
+  currency: "EUR",
+  volume: "Metri Cubi",
+  weight: "Chilogrammi",
+  dimensions: "Millimetri",
+  
+  // Dashboard Content
+  totalRevenue: "Ricavi Totali",
+  activeDistributors: "Distributori Attivi",
+  productsInCatalog: "Prodotti nel Catalogo",
+  regionalSalesPerformance: "Performance Vendite Regionali",
+  topPerformingProducts: "Prodotti Top Performance",
+  revenueBreakdownByProvince: "Suddivisione ricavi per provincia",
+  bestSellingProducts: "Prodotti Cornex più venduti questo mese",
+  productionSchedule: "Programmazione Produzione",
+  aiDemandForecast: "Previsione Domanda IA",
+  upcomingManufacturingPlans: "Piani di produzione imminenti",
+  predictedDemandNext30Days: "Domanda prevista per i prossimi 30 giorni",
+  units: "unità",
+  confidence: "Fiducia"
+};
+
 // Complete Arabic translations (Egypt)
 const egyptTranslations: Translation = {
   // Navigation & Core UI
@@ -654,7 +790,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 20,
     capital: 'Rome',
     language: 'Italian',
-    translations: southAfricaTranslations
+    translations: italianTranslations
   },
   {
     code: 'BR',
@@ -667,7 +803,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 26,
     capital: 'Brasília',
     language: 'Portuguese',
-    translations: spanishTranslations
+    translations: portugueseTranslations
   },
   {
     code: 'IN',
@@ -733,6 +869,72 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     capital: 'Moscow',
     language: 'Russian',
     translations: southAfricaTranslations
+  },
+  // Additional comprehensive language coverage
+  {
+    code: 'NL',
+    name: 'Netherlands',
+    flag: '🇳🇱',
+    currency: 'EUR',
+    phonePrefix: '+31',
+    timezone: 'Europe/Amsterdam',
+    dateFormat: 'DD-MM-YYYY',
+    regions: 12,
+    capital: 'Amsterdam',
+    language: 'Dutch',
+    translations: germanTranslations
+  },
+  {
+    code: 'PT',
+    name: 'Portugal',
+    flag: '🇵🇹',
+    currency: 'EUR',
+    phonePrefix: '+351',
+    timezone: 'Europe/Lisbon',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 18,
+    capital: 'Lisbon',
+    language: 'Portuguese',
+    translations: portugueseTranslations
+  },
+  {
+    code: 'AR',
+    name: 'Argentina',
+    flag: '🇦🇷',
+    currency: 'ARS',
+    phonePrefix: '+54',
+    timezone: 'America/Argentina/Buenos_Aires',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 23,
+    capital: 'Buenos Aires',
+    language: 'Spanish',
+    translations: spanishTranslations
+  },
+  {
+    code: 'CL',
+    name: 'Chile',
+    flag: '🇨🇱',
+    currency: 'CLP',
+    phonePrefix: '+56',
+    timezone: 'America/Santiago',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 16,
+    capital: 'Santiago',
+    language: 'Spanish',
+    translations: spanishTranslations
+  },
+  {
+    code: 'CO',
+    name: 'Colombia',
+    flag: '🇨🇴',
+    currency: 'COP',
+    phonePrefix: '+57',
+    timezone: 'America/Bogota',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 32,
+    capital: 'Bogotá',
+    language: 'Spanish',
+    translations: spanishTranslations
   }
 ];
 
