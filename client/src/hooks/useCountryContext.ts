@@ -51,9 +51,7 @@ export const CountryProvider = ({ children }: CountryProviderProps) => {
     const newCountry = getCountryByCode(countryCode);
     setCurrentCountry(countryCode);
     setCurrentCountryState(newCountry);
-    
-    // Force a page reload to ensure all components update with new translations
-    window.location.reload();
+    // No page reload - instant translation switching
   };
 
   const contextValue: CountryContextType = {

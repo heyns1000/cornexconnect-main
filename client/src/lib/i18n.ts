@@ -124,6 +124,55 @@ const southAfricaTranslations: Translation = {
   dimensions: "Millimetres"
 };
 
+// Arabic translations for Egypt, Morocco, Saudi Arabia, UAE
+const arabicTranslations: Translation = {
+  dashboard: "لوحة التحكم الذكية",
+  productCatalog: "كتالوج المنتجات",
+  productionPlanning: "تخطيط الإنتاج",
+  inventoryAI: "ذكاء المخزون",
+  globalDistributors: "الموزعون العالميون",
+  businessIntelligence: "ذكاء الأعمال",
+  routeManagement: "إدارة المسارات",
+  factorySetup: "إعداد المصنع",
+  hardwareStores: "متاجر الأدوات",
+  storeMap: "خريطة المتاجر",
+  
+  cornexManufacturing: "تصنيع كورنكس",
+  epsProducts: "منتجات EPS",
+  xpsProducts: "منتجات XPS",
+  productionSchedule: "جدولة الإنتاج",
+  qualityControl: "مراقبة الجودة",
+  
+  salesReps: "مندوبو المبيعات",
+  distributorNetwork: "شبكة الموزعين",
+  orderManagement: "إدارة الطلبات",
+  inventoryControl: "مراقبة المخزون",
+  demandForecasting: "توقع الطلب",
+  
+  edit: "تعديل",
+  delete: "حذف",
+  save: "حفظ",
+  cancel: "إلغاء",
+  close: "إغلاق",
+  create: "إنشاء",
+  view: "عرض",
+  export: "تصدير",
+  import: "استيراد",
+  search: "بحث",
+  filter: "تصفية",
+  
+  active: "نشط",
+  inactive: "غير نشط",
+  pending: "معلق",
+  completed: "مكتمل",
+  inProgress: "قيد التنفيذ",
+  
+  currency: "جنيه",
+  volume: "متر مكعب",
+  weight: "كيلوغرام",
+  dimensions: "ميليمتر"
+};
+
 // Spanish translations for Mexico, Spain, Argentina, Colombia, etc.
 const spanishTranslations: Translation = {
   dashboard: "Panel de Control",
@@ -346,7 +395,7 @@ export const SUPPORTED_COUNTRIES: CountryConfig[] = [
     regions: 27,
     capital: 'Cairo',
     language: 'Arabic',
-    translations: southAfricaTranslations // Will be translated to Arabic
+    translations: arabicTranslations
   },
   {
     code: 'MA',
@@ -359,7 +408,7 @@ export const SUPPORTED_COUNTRIES: CountryConfig[] = [
     regions: 12,
     capital: 'Rabat',
     language: 'Arabic',
-    translations: southAfricaTranslations
+    translations: arabicTranslations
   },
   {
     code: 'NG',
@@ -627,7 +676,7 @@ export const SUPPORTED_COUNTRIES: CountryConfig[] = [
     regions: 13,
     capital: 'Riyadh',
     language: 'Arabic', 
-    translations: southAfricaTranslations
+    translations: arabicTranslations
   },
   {
     code: 'AE',
@@ -640,7 +689,7 @@ export const SUPPORTED_COUNTRIES: CountryConfig[] = [
     regions: 7,
     capital: 'Abu Dhabi',
     language: 'Arabic',
-    translations: southAfricaTranslations
+    translations: arabicTranslations
   }
 ];
 

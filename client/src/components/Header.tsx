@@ -49,16 +49,18 @@ export default function Header() {
           
           {/* Quick Actions */}
           <div className="flex items-center space-x-4">
-            {/* Country Selector */}
-            <Button
-              variant="outline"
-              onClick={() => setShowCountrySelector(true)}
-              className="flex items-center space-x-2 px-3"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="text-lg">{currentCountry.flag}</span>
-              <span className="font-medium">{currentCountry.name}</span>
-            </Button>
+            {/* Country Selector - Instant Selection */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCountrySelector(true)}
+                className="flex items-center space-x-2 px-3"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-lg">{currentCountry.flag}</span>
+                <span className="font-medium">{currentCountry.name}</span>
+              </Button>
+            </div>
             
             {/* Currency Display */}
             <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
