@@ -152,6 +152,278 @@ const southAfricaTranslations: Translation = {
   confidence: "Confidence"
 };
 
+// Complete Spanish translations (Mexico/Spain)
+const spanishTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Panel de Control",
+  productCatalog: "Catálogo de Productos",
+  productionPlanning: "Planificación de Producción",
+  inventoryAI: "Inventario IA",
+  globalDistributors: "Distribuidores Globales",
+  businessIntelligence: "Inteligencia de Negocios",
+  routeManagement: "Gestión de Rutas",
+  factorySetup: "Configuración de Fábrica",
+  hardwareStores: "Ferreterías",
+  storeMap: "Mapa de Tiendas",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Fabricación Cornex",
+  epsProducts: "Productos EPS",
+  xpsProducts: "Productos XPS",
+  qualityControl: "Control de Calidad",
+  
+  // Business Operations
+  salesReps: "Representantes de Ventas",
+  distributorNetwork: "Red de Distribuidores",
+  orderManagement: "Gestión de Pedidos",
+  inventoryControl: "Control de Inventario",
+  demandForecasting: "Pronóstico de Demanda",
+  
+  // Common Actions
+  edit: "Editar",
+  delete: "Eliminar",
+  save: "Guardar",
+  cancel: "Cancelar",
+  close: "Cerrar",
+  create: "Crear",
+  view: "Ver",
+  export: "Exportar",
+  import: "Importar",
+  search: "Buscar",
+  filter: "Filtrar",
+  
+  // Status Terms
+  active: "Activo",
+  inactive: "Inactivo",
+  pending: "Pendiente",
+  completed: "Completado",
+  inProgress: "En Progreso",
+  
+  currency: "EUR",
+  volume: "Metros Cúbicos",
+  weight: "Kilogramos",
+  dimensions: "Milímetros",
+  
+  // Dashboard Content
+  totalRevenue: "Ingresos Totales",
+  activeDistributors: "Distribuidores Activos",
+  productsInCatalog: "Productos en Catálogo",
+  regionalSalesPerformance: "Rendimiento de Ventas Regional",
+  topPerformingProducts: "Productos de Mayor Rendimiento",
+  revenueBreakdownByProvince: "Desglose de ingresos por provincia",
+  bestSellingProducts: "Productos Cornex más vendidos este mes",
+  productionSchedule: "Programación de Producción",
+  aiDemandForecast: "Pronóstico de Demanda IA",
+  upcomingManufacturingPlans: "Planes de fabricación próximos",
+  predictedDemandNext30Days: "Demanda prevista para los próximos 30 días",
+  units: "unidades",
+  confidence: "Confianza"
+};
+
+// Complete Turkish translations
+const turkishTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Kontrol Paneli",
+  productCatalog: "Ürün Kataloğu",
+  productionPlanning: "Üretim Planlaması",
+  inventoryAI: "Envanter AI",
+  globalDistributors: "Küresel Distribütörler",
+  businessIntelligence: "İş Zekası",
+  routeManagement: "Rota Yönetimi",
+  factorySetup: "Fabrika Kurulumu",
+  hardwareStores: "Hırdavat Mağazaları",
+  storeMap: "Mağaza Haritası",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Cornex İmalatı",
+  epsProducts: "EPS Ürünleri",
+  xpsProducts: "XPS Ürünleri",
+  qualityControl: "Kalite Kontrolü",
+  
+  // Business Operations
+  salesReps: "Satış Temsilcileri",
+  distributorNetwork: "Distribütör Ağı",
+  orderManagement: "Sipariş Yönetimi",
+  inventoryControl: "Envanter Kontrolü",
+  demandForecasting: "Talep Tahmini",
+  
+  // Common Actions
+  edit: "Düzenle",
+  delete: "Sil",
+  save: "Kaydet",
+  cancel: "İptal",
+  close: "Kapat",
+  create: "Oluştur",
+  view: "Görüntüle",
+  export: "Dışa Aktar",
+  import: "İçe Aktar",
+  search: "Ara",
+  filter: "Filtrele",
+  
+  // Status Terms
+  active: "Aktif",
+  inactive: "Pasif",
+  pending: "Beklemede",
+  completed: "Tamamlandı",
+  inProgress: "Devam Ediyor",
+  
+  currency: "TRY",
+  volume: "Metreküp",
+  weight: "Kilogram",
+  dimensions: "Milimetre",
+  
+  // Dashboard Content
+  totalRevenue: "Toplam Gelir",
+  activeDistributors: "Aktif Distribütörler",
+  productsInCatalog: "Katalogdaki Ürünler",
+  regionalSalesPerformance: "Bölgesel Satış Performansı",
+  topPerformingProducts: "En İyi Performans Gösteren Ürünler",
+  revenueBreakdownByProvince: "İl bazında gelir dağılımı",
+  bestSellingProducts: "Bu ay en çok satan Cornex ürünleri",
+  productionSchedule: "Üretim Programı",
+  aiDemandForecast: "AI Talep Tahmini",
+  upcomingManufacturingPlans: "Yaklaşan üretim planları",
+  predictedDemandNext30Days: "Önümüzdeki 30 gün için öngörülen talep",
+  units: "adet",
+  confidence: "Güven"
+};
+
+// Complete German translations
+const germanTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Dashboard",
+  productCatalog: "Produktkatalog",
+  productionPlanning: "Produktionsplanung",
+  inventoryAI: "Inventar KI",
+  globalDistributors: "Globale Distributoren",
+  businessIntelligence: "Business Intelligence",
+  routeManagement: "Routenmanagement",
+  factorySetup: "Fabrikeinrichtung",
+  hardwareStores: "Eisenwarengeschäfte",
+  storeMap: "Geschäftskarte",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Cornex Fertigung",
+  epsProducts: "EPS Produkte",
+  xpsProducts: "XPS Produkte",
+  qualityControl: "Qualitätskontrolle",
+  
+  // Business Operations
+  salesReps: "Verkaufsvertreter",
+  distributorNetwork: "Vertriebsnetzwerk",
+  orderManagement: "Auftragsverwaltung",
+  inventoryControl: "Bestandskontrolle",
+  demandForecasting: "Bedarfsprognose",
+  
+  // Common Actions
+  edit: "Bearbeiten",
+  delete: "Löschen",
+  save: "Speichern",
+  cancel: "Abbrechen",
+  close: "Schließen",
+  create: "Erstellen",
+  view: "Anzeigen",
+  export: "Exportieren",
+  import: "Importieren",
+  search: "Suchen",
+  filter: "Filtern",
+  
+  // Status Terms
+  active: "Aktiv",
+  inactive: "Inaktiv",
+  pending: "Ausstehend",
+  completed: "Abgeschlossen",
+  inProgress: "In Bearbeitung",
+  
+  currency: "EUR",
+  volume: "Kubikmeter",
+  weight: "Kilogramm",
+  dimensions: "Millimeter",
+  
+  // Dashboard Content
+  totalRevenue: "Gesamtumsatz",
+  activeDistributors: "Aktive Distributoren",
+  productsInCatalog: "Produkte im Katalog",
+  regionalSalesPerformance: "Regionale Verkaufsleistung",
+  topPerformingProducts: "Leistungsstärkste Produkte",
+  revenueBreakdownByProvince: "Umsatzaufschlüsselung nach Bundesland",
+  bestSellingProducts: "Meistverkaufte Cornex-Produkte diesen Monat",
+  productionSchedule: "Produktionsplan",
+  aiDemandForecast: "KI-Nachfrageprognose",
+  upcomingManufacturingPlans: "Anstehende Fertigungspläne",
+  predictedDemandNext30Days: "Vorhergesagte Nachfrage für die nächsten 30 Tage",
+  units: "Einheiten",
+  confidence: "Vertrauen"
+};
+
+// Complete French translations
+const frenchTranslations: Translation = {
+  // Navigation & Core UI
+  dashboard: "Tableau de Bord",
+  productCatalog: "Catalogue Produits",
+  productionPlanning: "Planification Production",
+  inventoryAI: "Inventaire IA",
+  globalDistributors: "Distributeurs Globaux",
+  businessIntelligence: "Intelligence d'Affaires",
+  routeManagement: "Gestion des Routes",
+  factorySetup: "Configuration d'Usine",
+  hardwareStores: "Quincailleries",
+  storeMap: "Carte des Magasins",
+  
+  // Manufacturing Terms
+  cornexManufacturing: "Fabrication Cornex",
+  epsProducts: "Produits EPS",
+  xpsProducts: "Produits XPS",
+  qualityControl: "Contrôle Qualité",
+  
+  // Business Operations
+  salesReps: "Représentants Commerciaux",
+  distributorNetwork: "Réseau de Distribution",
+  orderManagement: "Gestion Commandes",
+  inventoryControl: "Contrôle Inventaire",
+  demandForecasting: "Prévision Demande",
+  
+  // Common Actions
+  edit: "Modifier",
+  delete: "Supprimer",
+  save: "Enregistrer",
+  cancel: "Annuler",
+  close: "Fermer",
+  create: "Créer",
+  view: "Voir",
+  export: "Exporter",
+  import: "Importer",
+  search: "Chercher",
+  filter: "Filtrer",
+  
+  // Status Terms
+  active: "Actif",
+  inactive: "Inactif",
+  pending: "En attente",
+  completed: "Terminé",
+  inProgress: "En cours",
+  
+  currency: "EUR",
+  volume: "Mètres Cubes",
+  weight: "Kilogrammes",
+  dimensions: "Millimètres",
+  
+  // Dashboard Content
+  totalRevenue: "Chiffre d'Affaires Total",
+  activeDistributors: "Distributeurs Actifs",
+  productsInCatalog: "Produits au Catalogue",
+  regionalSalesPerformance: "Performance des Ventes Régionales",
+  topPerformingProducts: "Produits les Plus Performants",
+  revenueBreakdownByProvince: "Répartition du chiffre d'affaires par province",
+  bestSellingProducts: "Produits Cornex les plus vendus ce mois-ci",
+  productionSchedule: "Planning de Production",
+  aiDemandForecast: "Prévision de Demande IA",
+  upcomingManufacturingPlans: "Plans de fabrication à venir",
+  predictedDemandNext30Days: "Demande prévue pour les 30 prochains jours",
+  units: "unités",
+  confidence: "Confiance"
+};
+
 // Complete Arabic translations (Egypt)
 const egyptTranslations: Translation = {
   // Navigation & Core UI
@@ -301,7 +573,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 16,
     capital: 'Berlin',
     language: 'German',
-    translations: southAfricaTranslations
+    translations: germanTranslations
   },
   {
     code: 'FR',
@@ -314,7 +586,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 18,
     capital: 'Paris',
     language: 'French',
-    translations: southAfricaTranslations
+    translations: frenchTranslations
   },
   {
     code: 'ES',
@@ -327,7 +599,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 17,
     capital: 'Madrid',
     language: 'Spanish',
-    translations: southAfricaTranslations
+    translations: spanishTranslations
   },
   {
     code: 'TR',
@@ -340,7 +612,7 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 81,
     capital: 'Ankara',
     language: 'Turkish',
-    translations: southAfricaTranslations
+    translations: turkishTranslations
   },
   
   // Americas
@@ -368,6 +640,98 @@ export const SUPPORTED_COUNTRIES: Country[] = [
     regions: 32,
     capital: 'Mexico City',
     language: 'Spanish',
+    translations: spanishTranslations
+  },
+  // Additional countries with native translations
+  {
+    code: 'IT',
+    name: 'Italy',
+    flag: '🇮🇹',
+    currency: 'EUR',
+    phonePrefix: '+39',
+    timezone: 'Europe/Rome',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 20,
+    capital: 'Rome',
+    language: 'Italian',
+    translations: southAfricaTranslations
+  },
+  {
+    code: 'BR',
+    name: 'Brazil',
+    flag: '🇧🇷',
+    currency: 'BRL',
+    phonePrefix: '+55',
+    timezone: 'America/Sao_Paulo',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 26,
+    capital: 'Brasília',
+    language: 'Portuguese',
+    translations: spanishTranslations
+  },
+  {
+    code: 'IN',
+    name: 'India',
+    flag: '🇮🇳',
+    currency: 'INR',
+    phonePrefix: '+91',
+    timezone: 'Asia/Kolkata',
+    dateFormat: 'DD/MM/YYYY',
+    regions: 28,
+    capital: 'New Delhi',
+    language: 'Hindi',
+    translations: southAfricaTranslations
+  },
+  {
+    code: 'CN',
+    name: 'China',
+    flag: '🇨🇳',
+    currency: 'CNY',
+    phonePrefix: '+86',
+    timezone: 'Asia/Shanghai',
+    dateFormat: 'YYYY/MM/DD',
+    regions: 34,
+    capital: 'Beijing',
+    language: 'Chinese',
+    translations: southAfricaTranslations
+  },
+  {
+    code: 'JP',
+    name: 'Japan',
+    flag: '🇯🇵',
+    currency: 'JPY',
+    phonePrefix: '+81',
+    timezone: 'Asia/Tokyo',
+    dateFormat: 'YYYY/MM/DD',
+    regions: 47,
+    capital: 'Tokyo',
+    language: 'Japanese',
+    translations: southAfricaTranslations
+  },
+  {
+    code: 'KR',
+    name: 'South Korea',
+    flag: '🇰🇷',
+    currency: 'KRW',
+    phonePrefix: '+82',
+    timezone: 'Asia/Seoul',
+    dateFormat: 'YYYY/MM/DD',
+    regions: 17,
+    capital: 'Seoul',
+    language: 'Korean',
+    translations: southAfricaTranslations
+  },
+  {
+    code: 'RU',
+    name: 'Russia',
+    flag: '🇷🇺',
+    currency: 'RUB',
+    phonePrefix: '+7',
+    timezone: 'Europe/Moscow',
+    dateFormat: 'DD.MM.YYYY',
+    regions: 85,
+    capital: 'Moscow',
+    language: 'Russian',
     translations: southAfricaTranslations
   }
 ];
