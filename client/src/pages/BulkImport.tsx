@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, X, Download, Eye, XCircle, Clock, MoreHorizontal, ChevronDown, Trash2, Info, Lightbulb, Zap, Target, BarChart, Folder, Users, FileText, Package, BarChart3, Camera } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, X, Download, Eye, XCircle, Clock, MoreHorizontal, ChevronDown, Trash2, Info, Lightbulb, Zap, Target, BarChart, Folder, Users, FileText, Package, BarChart3, Camera, Shield, Activity, Database, FileCheck, TrendingUp, AlertTriangle } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,6 +23,13 @@ interface ImportFile {
   file: File;
   status: "pending" | "processing" | "completed" | "error";
   progress: number;
+  healthCheck?: {
+    score: number;
+    issues: string[];
+    warnings: string[];
+    dataQuality: "excellent" | "good" | "fair" | "poor";
+    validationPassed: boolean;
+  };
   result?: {
     totalRows: number;
     validRows: number;
@@ -62,11 +69,101 @@ export default function BulkImport() {
   const [activeTab, setActiveTab] = useState("upload");
   const [selectedSessionDetails, setSelectedSessionDetails] = useState<ImportSession | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [healthCheckEnabled, setHealthCheckEnabled] = useState(true);
+  const [realTimeValidation, setRealTimeValidation] = useState(true);
 
   // Fetch import history
   const { data: importHistory = [] } = useQuery<ImportSession[]>({
     queryKey: ["/api/bulk-import/history"]
   });
+
+  // Health check functions
+  const performHealthCheck = (file: File): Promise<ImportFile['healthCheck']> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = e.target?.result as string;
+        const lines = data.split('\n').filter(line => line.trim());
+        
+        const issues: string[] = [];
+        const warnings: string[] = [];
+        let score = 100;
+        
+        // Check file size
+        if (file.size > 50 * 1024 * 1024) {
+          issues.push("File size exceeds 50MB limit");
+          score -= 20;
+        }
+        
+        // Check row count
+        if (lines.length < 2) {
+          issues.push("File appears to be empty or has no data rows");
+          score -= 30;
+        } else if (lines.length > 10000) {
+          warnings.push("Large file detected - may take longer to process");
+          score -= 5;
+        }
+        
+        // Check for required columns (basic validation)
+        const headers = lines[0]?.split(',').map(h => h.trim().toLowerCase());
+        const requiredFields = ['store', 'name', 'province', 'city'];
+        const missingFields = requiredFields.filter(field => 
+          !headers.some(header => header.includes(field))
+        );
+        
+        if (missingFields.length > 0) {
+          issues.push(`Missing required columns: ${missingFields.join(', ')}`);
+          score -= missingFields.length * 10;
+        }
+        
+        // Check for data consistency
+        const sampleRows = lines.slice(1, 10);
+        const inconsistentRows = sampleRows.filter(row => {
+          const cols = row.split(',');
+          return cols.length !== headers.length;
+        });
+        
+        if (inconsistentRows.length > 0) {
+          warnings.push("Some rows have inconsistent column counts");
+          score -= 10;
+        }
+        
+        // Determine data quality
+        let dataQuality: "excellent" | "good" | "fair" | "poor";
+        if (score >= 90) dataQuality = "excellent";
+        else if (score >= 75) dataQuality = "good";
+        else if (score >= 60) dataQuality = "fair";
+        else dataQuality = "poor";
+        
+        resolve({
+          score: Math.max(0, score),
+          issues,
+          warnings,
+          dataQuality,
+          validationPassed: issues.length === 0
+        });
+      };
+      
+      reader.readAsText(file.slice(0, 10240)); // Read first 10KB for validation
+    });
+  };
+
+  const getHealthScoreColor = (score: number) => {
+    if (score >= 90) return "text-green-600 bg-green-50 border-green-200";
+    if (score >= 75) return "text-blue-600 bg-blue-50 border-blue-200";
+    if (score >= 60) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+    return "text-red-600 bg-red-50 border-red-200";
+  };
+
+  const getDataQualityIcon = (quality: string) => {
+    switch (quality) {
+      case "excellent": return <Shield className="w-4 h-4 text-green-600" />;
+      case "good": return <CheckCircle className="w-4 h-4 text-blue-600" />;
+      case "fair": return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
+      case "poor": return <XCircle className="w-4 h-4 text-red-600" />;
+      default: return <Activity className="w-4 h-4 text-gray-600" />;
+    }
+  };
 
   // Process files mutation
   const processFilesMutation = useMutation({
@@ -209,7 +306,7 @@ export default function BulkImport() {
   };
 
   // Handle file drop
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const newFiles: ImportFile[] = acceptedFiles.map(file => ({
       id: Math.random().toString(36).substr(2, 9),
       file,
@@ -218,7 +315,27 @@ export default function BulkImport() {
     }));
 
     setImportFiles(prev => [...prev, ...newFiles]);
-  }, []);
+    
+    // Perform health checks if enabled
+    if (healthCheckEnabled && realTimeValidation) {
+      for (let i = 0; i < newFiles.length; i++) {
+        const file = newFiles[i];
+        try {
+          const healthCheck = await performHealthCheck(file.file);
+          setImportFiles(prev => prev.map(f => 
+            f.id === file.id ? { ...f, healthCheck } : f
+          ));
+        } catch (error) {
+          console.error('Health check failed for file:', file.file.name, error);
+        }
+      }
+    }
+    
+    toast({
+      title: "Files Added",
+      description: `Added ${acceptedFiles.length} file(s) to the import queue${healthCheckEnabled ? ' - Running health checks...' : ''}`,
+    });
+  }, [toast, healthCheckEnabled, realTimeValidation, performHealthCheck]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -369,6 +486,57 @@ export default function BulkImport() {
           )}
         </div>
 
+        {/* Health Check Settings */}
+        <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-emerald-500" />
+              Health Check & Validation Settings
+            </CardTitle>
+            <CardDescription>
+              Configure real-time validation and data quality monitoring for your imports
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex items-center gap-3">
+                  <FileCheck className="w-4 h-4 text-blue-500" />
+                  <div>
+                    <p className="font-medium">Health Check</p>
+                    <p className="text-sm text-muted-foreground">Analyze file quality before import</p>
+                  </div>
+                </div>
+                <Button
+                  variant={healthCheckEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setHealthCheckEnabled(!healthCheckEnabled)}
+                >
+                  {healthCheckEnabled ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Activity className="w-4 h-4 text-green-500" />
+                  <div>
+                    <p className="font-medium">Real-time Validation</p>
+                    <p className="text-sm text-muted-foreground">Instant validation on file drop</p>
+                  </div>
+                </div>
+                <Button
+                  variant={realTimeValidation ? "default" : "outline"}
+                  size="sm"
+                  disabled={!healthCheckEnabled}
+                  onClick={() => setRealTimeValidation(!realTimeValidation)}
+                >
+                  {realTimeValidation ? "Enabled" : "Disabled"}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Tabs defaultValue="upload" className="space-y-6" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="upload">File Upload</TabsTrigger>
@@ -425,31 +593,96 @@ export default function BulkImport() {
                 <CardContent>
                   <ScrollArea className="h-96">
                     <div className="space-y-3">
-                      {importFiles.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
-                          <div className="flex items-center gap-3">
-                            {getStatusIcon(file.status)}
-                            <div>
-                              <p className="font-medium">{file.file?.name || `File ${index + 1}`}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {file.file?.size ? (file.file.size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown size'}
-                              </p>
+                      {importFiles.map((file, index) => (
+                        <div key={file.id} className="p-4 rounded-lg border border-white/10 bg-white/5 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              {getStatusIcon(file.status)}
+                              <div>
+                                <p className="font-medium">{file.file?.name || `File ${index + 1}`}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {file.file?.size ? (file.file.size / 1024 / 1024).toFixed(2) + ' MB' : 'Unknown size'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={file.status === "error" ? "destructive" : "secondary"}>
+                                {file.status}
+                              </Badge>
+                              {file.status === "pending" && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeFile(file.id)}
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={file.status === "error" ? "destructive" : "secondary"}>
-                              {file.status}
-                            </Badge>
-                            {file.status === "pending" && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeFile(file.id)}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
+
+                          {/* Health Check Results */}
+                          {file.healthCheck && (
+                            <div className="bg-white/5 rounded-lg border border-white/10 p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  {getDataQualityIcon(file.healthCheck.dataQuality)}
+                                  <span className="font-medium text-sm">Health Check Results</span>
+                                </div>
+                                <div className={`px-2 py-1 rounded text-xs font-medium border ${getHealthScoreColor(file.healthCheck.score)}`}>
+                                  Score: {file.healthCheck.score}/100
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-3 mb-2">
+                                <div className="text-center">
+                                  <div className={`text-sm font-bold ${file.healthCheck.validationPassed ? 'text-green-600' : 'text-red-600'}`}>
+                                    {file.healthCheck.validationPassed ? 'PASSED' : 'FAILED'}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Validation</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-sm font-bold text-blue-600 capitalize">
+                                    {file.healthCheck.dataQuality}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Quality</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-sm font-bold text-yellow-600">
+                                    {file.healthCheck.issues.length + file.healthCheck.warnings.length}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Issues</div>
+                                </div>
+                              </div>
+
+                              {/* Issues and Warnings */}
+                              {file.healthCheck.issues.length > 0 && (
+                                <Alert className="mb-2 py-2">
+                                  <AlertTriangle className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">
+                                    <strong>Issues:</strong> {file.healthCheck.issues.join(', ')}
+                                  </AlertDescription>
+                                </Alert>
+                              )}
+                              
+                              {file.healthCheck.warnings.length > 0 && (
+                                <Alert className="py-2">
+                                  <Info className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">
+                                    <strong>Warnings:</strong> {file.healthCheck.warnings.join(', ')}
+                                  </AlertDescription>
+                                </Alert>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Real-time validation indicator */}
+                          {healthCheckEnabled && !file.healthCheck && file.status === "pending" && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Activity className="w-4 h-4 animate-pulse" />
+                              <span>Running health check...</span>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
