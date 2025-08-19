@@ -117,6 +117,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Products API endpoints
+  app.get("/api/products", async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ error: "Failed to fetch products" });
+    }
+  });
+
+  // Inventory API endpoints
+  app.get("/api/inventory", async (req, res) => {
+    try {
+      const inventory = await storage.getInventory();
+      res.json(inventory);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
+      res.status(500).json({ error: "Failed to fetch inventory" });
+    }
+  });
+
   // Emergency product restoration endpoint
   app.post("/api/products/restore", async (req, res) => {
     try {
