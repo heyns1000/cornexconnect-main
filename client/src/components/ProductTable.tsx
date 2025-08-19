@@ -54,7 +54,7 @@ export default function ProductTable() {
     }
   };
 
-  const filteredInventory = inventory?.filter((item: any) => {
+  const filteredInventory = Array.isArray(inventory) ? inventory.filter((item: any) => {
     const product = item.products || item.product;
     if (!product) return false;
     
@@ -65,7 +65,7 @@ export default function ProductTable() {
     const matchesCategory = categoryFilter === "all" || product.category === categoryFilter;
     
     return matchesSearch && matchesCategory;
-  }) || [];
+  }) : [];
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-64">Loading...</div>;
@@ -91,9 +91,9 @@ export default function ProductTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="EPS">EPS Premium</SelectItem>
-            <SelectItem value="BR">BR XPS Budget</SelectItem>
-            <SelectItem value="LED">LED Ready</SelectItem>
+            <SelectItem value="EPS Premium Range">EPS Premium</SelectItem>
+            <SelectItem value="BR XPS Budget Range">BR XPS Budget</SelectItem>
+            <SelectItem value="LED Ready Series">LED Ready</SelectItem>
           </SelectContent>
         </Select>
         
@@ -128,12 +128,12 @@ export default function ProductTable() {
                   <TableCell>
                     <div className="flex items-center">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 ${
-                        product.category === 'EPS' ? 'bg-blue-100' :
-                        product.category === 'BR' ? 'bg-green-100' : 'bg-purple-100'
+                        product.category === 'EPS Premium Range' ? 'bg-blue-100' :
+                        product.category === 'BR XPS Budget Range' ? 'bg-green-100' : 'bg-purple-100'
                       }`}>
                         <span className={`text-xs font-bold ${
-                          product.category === 'EPS' ? 'text-blue-600' :
-                          product.category === 'BR' ? 'text-green-600' : 'text-purple-600'
+                          product.category === 'EPS Premium Range' ? 'text-blue-600' :
+                          product.category === 'BR XPS Budget Range' ? 'text-green-600' : 'text-purple-600'
                         }`}>
                           {product.sku}
                         </span>

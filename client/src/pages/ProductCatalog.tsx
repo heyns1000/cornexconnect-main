@@ -36,7 +36,7 @@ export default function ProductCatalog() {
   const productCategories = [
     {
       name: "EPS Premium Range",
-      count: Array.isArray(products) ? products.filter((p: any) => p.category === "EPS").length : 13,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "EPS Premium Range").length : 0,
       description: "Standard density polystyrene cornices for cost-effective installations",
       sizeRange: "55mm - 175mm",
       priceRange: "R 8.63 - R 18.58",
@@ -44,7 +44,7 @@ export default function ProductCatalog() {
     },
     {
       name: "BR XPS Budget Range", 
-      count: Array.isArray(products) ? products.filter((p: any) => p.category === "BR").length : 13,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "BR XPS Budget Range").length : 0,
       description: "High-density XPS cornices for professional installations",
       sizeRange: "55mm - 170mm", 
       priceRange: "R 6.90 - R 21.50",
@@ -52,7 +52,7 @@ export default function ProductCatalog() {
     },
     {
       name: "LED Ready Series",
-      count: Array.isArray(products) ? products.filter((p: any) => p.category === "LED").length : 8,
+      count: Array.isArray(products) ? products.filter((p: any) => p.category === "LED Ready Series").length : 0,
       description: "Specialized cornices with integrated LED lighting channels",
       sizeRange: "40mm - 145mm",
       priceRange: "R 15.90 - R 32.75", 
