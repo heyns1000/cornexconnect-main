@@ -47,7 +47,16 @@ import {
   type InsertUserMoodHistory,
   aiMoodAnalytics,
   type AiMoodAnalytics,
-  type InsertAiMoodAnalytics
+  type InsertAiMoodAnalytics,
+  importAchievements,
+  userAchievementProgress,
+  importAccuracyMetrics,
+  type ImportAchievement,
+  type InsertImportAchievement,
+  type UserAchievementProgress,
+  type InsertUserAchievementProgress,
+  type ImportAccuracyMetrics,
+  type InsertImportAccuracyMetrics
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc, asc, and, gte, lte, ilike, or } from "drizzle-orm";

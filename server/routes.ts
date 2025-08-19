@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { achievementService } from "./achievementService";
 import multer from "multer";
 import * as XLSX from 'xlsx';
 import { nanoid } from 'nanoid';
@@ -79,6 +80,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching session status:", error);
       res.status(500).json({ error: "Failed to fetch session status" });
+    }
+  });
+
+  // Achievement System Routes
+  app.get("/api/achievements/user/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      await achievementService.initializeUserProgress(userId);
+      const data = await achievementService.getUserAchievements(userId);
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching user achievements:", error);
+      res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+
+  app.post("/api/achievements/record-import", async (req, res) => {
+    try {
+      const { userId, sessionId, fileName, performance } = req.body;
+      
+      await achievementService.recordImportMetrics(
+        userId,
+        sessionId,
+        fileName,
+        performance
+      );
+      
+      const updatedData = await achievementService.getUserAchievements(userId);
+      res.json(updatedData);
+    } catch (error) {
+      console.error("Error recording import metrics:", error);
+      res.status(500).json({ error: "Failed to record metrics" });
     }
   });
 

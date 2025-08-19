@@ -1062,4 +1062,80 @@ export type PoStatusHistory = typeof poStatusHistory.$inferSelect;
 export type InsertPoDocument = typeof poDocuments.$inferInsert;
 export type PoDocument = typeof poDocuments.$inferSelect;
 
+// Gamified Achievement System for Import Accuracy
+export const importAchievements = pgTable("import_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  achievementType: varchar("achievement_type").notNull(), // 'accuracy', 'volume', 'streak', 'speed', 'quality'
+  achievementName: varchar("achievement_name").notNull(),
+  description: text("description").notNull(),
+  iconType: varchar("icon_type").notNull(), // 'trophy', 'medal', 'star', 'crown', 'gem'
+  level: integer("level").notNull().default(1), // Bronze=1, Silver=2, Gold=3, Platinum=4, Diamond=5
+  pointsAwarded: integer("points_awarded").notNull().default(0),
+  criteria: jsonb("criteria").notNull(), // Achievement criteria and thresholds
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  isActive: boolean("is_active").notNull().default(true),
+});
+
+export const userAchievementProgress = pgTable("user_achievement_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  achievementType: varchar("achievement_type").notNull(),
+  currentProgress: integer("current_progress").notNull().default(0),
+  targetProgress: integer("target_progress").notNull(),
+  level: integer("level").notNull().default(1),
+  totalPoints: integer("total_points").notNull().default(0),
+  lastImportAccuracy: decimal("last_import_accuracy", { precision: 5, scale: 2 }).default("0.00"),
+  bestAccuracy: decimal("best_accuracy", { precision: 5, scale: 2 }).default("0.00"),
+  consecutiveSuccessfulImports: integer("consecutive_successful_imports").notNull().default(0),
+  totalImports: integer("total_imports").notNull().default(0),
+  totalRecordsImported: integer("total_records_imported").notNull().default(0),
+  averageImportTime: integer("average_import_time").notNull().default(0), // in seconds
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const importAccuracyMetrics = pgTable("import_accuracy_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: varchar("session_id").notNull(),
+  fileName: varchar("file_name").notNull(),
+  totalRows: integer("total_rows").notNull(),
+  validRows: integer("valid_rows").notNull(),
+  errorRows: integer("error_rows").notNull(),
+  accuracyPercentage: decimal("accuracy_percentage", { precision: 5, scale: 2 }).notNull(),
+  importDuration: integer("import_duration").notNull(), // in seconds
+  qualityScore: integer("quality_score").notNull().default(0), // 0-100
+  errorsDetected: jsonb("errors_detected"),
+  improvementSuggestions: jsonb("improvement_suggestions"),
+  pointsEarned: integer("points_earned").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Achievement System Relations
+export const importAchievementsRelations = relations(importAchievements, ({ one }) => ({
+  user: one(users, { fields: [importAchievements.userId], references: [users.id] }),
+}));
+
+export const userAchievementProgressRelations = relations(userAchievementProgress, ({ one }) => ({
+  user: one(users, { fields: [userAchievementProgress.userId], references: [users.id] }),
+}));
+
+export const importAccuracyMetricsRelations = relations(importAccuracyMetrics, ({ one }) => ({
+  user: one(users, { fields: [importAccuracyMetrics.userId], references: [users.id] }),
+}));
+
+// Achievement System Schemas
+export const insertImportAchievementSchema = createInsertSchema(importAchievements).omit({ id: true, unlockedAt: true });
+export const insertUserAchievementProgressSchema = createInsertSchema(userAchievementProgress).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertImportAccuracyMetricsSchema = createInsertSchema(importAccuracyMetrics).omit({ id: true, createdAt: true });
+
+// Achievement System Types
+export type ImportAchievement = typeof importAchievements.$inferSelect;
+export type InsertImportAchievement = z.infer<typeof insertImportAchievementSchema>;
+export type UserAchievementProgress = typeof userAchievementProgress.$inferSelect;
+export type InsertUserAchievementProgress = z.infer<typeof insertUserAchievementProgressSchema>;
+export type ImportAccuracyMetrics = typeof importAccuracyMetrics.$inferSelect;
+export type InsertImportAccuracyMetrics = z.infer<typeof insertImportAccuracyMetricsSchema>;
+
 

@@ -31,6 +31,7 @@ import AuditTrail from "@/pages/AuditTrail";
 import ProductLabels from "@/pages/ProductLabels";
 import StoreMapVisualization from "@/pages/StoreMapVisualization";
 import Profile from "@/pages/Profile";
+import Achievements from "@/pages/Achievements";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import { FruitfulAssistChatbot, FruitfulAssistFloatingButton } from "@/components/FruitfulAssistChatbot";
@@ -96,6 +97,7 @@ function Router() {
         <Route path="/audit-trail" component={AuditTrail} />
         <Route path="/product-labels" component={ProductLabels} />
         <Route path="/profile" component={Profile} />
+        <Route path="/achievements" component={Achievements} />
         <Route path="/brands/:id" component={BrandDetail} />
       </Switch>
     </PageTransition>

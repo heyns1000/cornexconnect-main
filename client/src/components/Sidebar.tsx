@@ -19,7 +19,8 @@ import {
   User,
   LogOut,
   Tag,
-  Map
+  Map,
+  Trophy
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     { name: "Bulk Import", href: "/bulk-import", icon: Upload },
     { name: t.businessIntelligence, href: "/analytics", icon: TrendingUp },
     { name: "Product Labels", href: "/product-labels", icon: Tag },
+    { name: "Achievements", href: "/achievements", icon: Trophy },
     { name: "User Management", href: "/user-management", icon: User },
     { name: "Inventory Upload", href: "/inventory-upload", icon: Upload },
     { name: "Audit Trail", href: "/audit-trail", icon: FileText },
