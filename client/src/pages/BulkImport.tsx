@@ -254,7 +254,14 @@ export default function BulkImport() {
       ['Import Session Report'],
       ['Session ID:', session.id],
       ['Session Name:', session.name],
-      ['Created:', new Date(session.createdAt).toLocaleString()],
+      ['Created:', new Date(session.createdAt).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+      })],
       ['Status:', session.status],
       ['Total Files:', session.totalFiles.toString()],
       ['Processed Files:', session.processedFiles.toString()],
@@ -663,7 +670,14 @@ export default function BulkImport() {
                         </div>
                       </CardTitle>
                       <CardDescription>
-                        {new Date(session.createdAt).toLocaleString()}
+                        {new Date(session.createdAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZoneName: 'short'
+                        })}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -782,7 +796,14 @@ export default function BulkImport() {
                     <div className="space-y-2 text-sm">
                       <p><span className="font-medium">ID:</span> {selectedSessionDetails.id}</p>
                       <p><span className="font-medium">Name:</span> {selectedSessionDetails.name}</p>
-                      <p><span className="font-medium">Created:</span> {new Date(selectedSessionDetails.createdAt).toLocaleString()}</p>
+                      <p><span className="font-medium">Created:</span> {new Date(selectedSessionDetails.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        timeZoneName: 'short'
+                      })}</p>
                       <p><span className="font-medium">Status:</span> 
                         <Badge className={`ml-2 ${getStatusColor(selectedSessionDetails.status)}`}>
                           {selectedSessionDetails.status}
