@@ -26,6 +26,7 @@ interface ImportFile {
   result?: {
     totalRows: number;
     validRows: number;
+    importedRows?: number;
     errors: string[];
     preview: any[];
   };
@@ -91,15 +92,16 @@ export default function BulkImport() {
       
       if (data.success) {
         // Immediately update all files to completed status
-        setImportFiles(prev => prev.map(file => ({
+        setImportFiles(prev => prev.map((file, index) => ({
           ...file,
           status: "completed" as const,
           progress: 100,
           result: {
-            totalRows: data.results?.[0]?.totalRows || 0,
-            validRows: data.results?.[0]?.validRows || 0,
+            totalRows: data.results?.[index]?.totalRows || 0,
+            validRows: data.results?.[index]?.validRows || 0,
+            importedRows: data.results?.[index]?.importedRows || 0,
             errors: [],
-            preview: data.results?.[0]?.preview || []
+            preview: data.results?.[index]?.preview || []
           }
         })));
 
@@ -556,7 +558,7 @@ export default function BulkImport() {
                     <Card className="backdrop-blur-sm bg-white/5 border border-white/10">
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {currentSession.files.reduce((sum, file) => sum + (file.result?.validRows || 0), 0)}
+                          {currentSession.files.reduce((sum, file) => sum + (file.result?.importedRows || file.result?.validRows || 0), 0)}
                         </div>
                         <div className="text-sm text-muted-foreground">Imported Records</div>
                       </CardContent>
