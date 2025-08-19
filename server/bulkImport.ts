@@ -46,7 +46,7 @@ export async function processBulkFiles(files: Express.Multer.File[]): Promise<{
       const preview = [];
 
       // Process each row (skip header)
-      for (let i = 1; i < jsonData.length && i <= 100; i++) { // Limit to 100 rows for safety
+      for (let i = 1; i < jsonData.length; i++) { // Process all rows
         const row = jsonData[i] as string[];
         
         if (row && row.length > 0 && row[0] && String(row[0]).trim()) {
