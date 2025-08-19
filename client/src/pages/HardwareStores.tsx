@@ -124,23 +124,34 @@ export default function HardwareStores() {
             <div className="space-y-2">
               {storesLoading ? (
                 <div className="text-center py-8">Loading stores...</div>
+              ) : filteredStores.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No stores found matching your search criteria
+                </div>
               ) : (
-                filteredStores.slice(0, 10).map((store: any, index: number) => (
-                  <div key={store.id || index} className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="outline">{store.storeType || 'Hardware'}</Badge>
-                      <div>
-                        <p className="font-medium">{store.storeName || 'Hardware Store'}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {store.city || 'City'}, {store.province || 'Province'}
-                        </p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      View Details
-                    </Button>
+                <>
+                  <div className="flex justify-between items-center mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {filteredStores.length} stores
+                    </p>
                   </div>
-                ))
+                  {filteredStores.map((store: any, index: number) => (
+                    <div key={store.id || index} className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="outline">{store.storeType || 'Hardware'}</Badge>
+                        <div>
+                          <p className="font-medium">{store.storeName || 'Hardware Store'}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {store.city || 'City'}, {store.province || 'Province'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        View Details
+                      </Button>
+                    </div>
+                  ))}
+                </>
               )}
             </div>
           </CardContent>

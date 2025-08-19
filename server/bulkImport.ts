@@ -52,10 +52,17 @@ export async function processBulkFiles(files: Express.Multer.File[]): Promise<{
         if (row && row.length > 0 && row[0] && String(row[0]).trim()) {
           const storeName = String(row[0]).trim();
           
-          // Skip header rows
-          if (storeName.toLowerCase().includes('store') || 
-              storeName.toLowerCase().includes('name') ||
-              storeName.toLowerCase().includes('company')) {
+          // Skip header rows - be more specific to avoid skipping valid store names
+          const lowerStoreName = storeName.toLowerCase();
+          if (lowerStoreName === 'store name' || 
+              lowerStoreName === 'store' ||
+              lowerStoreName === 'name' ||
+              lowerStoreName === 'company name' ||
+              lowerStoreName === 'company' ||
+              lowerStoreName === 'business name' ||
+              lowerStoreName === 'customer name' ||
+              lowerStoreName.startsWith('store name') ||
+              lowerStoreName.startsWith('company name')) {
             continue;
           }
 

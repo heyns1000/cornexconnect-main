@@ -115,9 +115,18 @@ export default function StoreMapVisualization() {
         <CardContent>
           {storesLoading ? (
             <div className="text-center py-8">Loading stores...</div>
+          ) : filteredStores.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No stores found matching your search criteria
+            </div>
           ) : (
             <div className="space-y-2">
-              {filteredStores.slice(0, 10).map((store: any, index: number) => (
+              <div className="flex justify-between items-center mb-4">
+                <p className="text-sm text-muted-foreground">
+                  Displaying all {filteredStores.length} stores
+                </p>
+              </div>
+              {filteredStores.map((store: any, index: number) => (
                 <div key={store.id || index} className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-white/5">
                   <div className="flex items-center gap-3">
                     <MapPin className="w-4 h-4 text-emerald-500" />
