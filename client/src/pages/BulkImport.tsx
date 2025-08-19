@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, X, Download, Eye, XCircle, Clock, MoreHorizontal, ChevronDown, Trash2, Info, Lightbulb, Zap, Target, BarChart, Folder, Users, FileText, Package, BarChart3, Camera, Shield, Activity, Database, FileCheck, TrendingUp, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, X, Download, Eye, XCircle, Clock, MoreHorizontal, ChevronDown, Trash2, Info, Lightbulb, Zap, Target, BarChart, Folder, Users, FileText, Package, BarChart3, Camera, Shield, Activity, Database, FileCheck, TrendingUp, AlertTriangle, Building2 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
 import { apiRequest } from "@/lib/queryClient";
@@ -458,6 +458,16 @@ export default function BulkImport() {
             <p className="text-muted-foreground mt-2">
               Import unstructured Excel files to add hardware stores to the system
             </p>
+            {/* Company Context */}
+            <div className="flex items-center gap-2 mt-3 p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <Building2 className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                HOMEMART AFRICA (2022/854581/07) - R500,000 Credit Limit
+              </span>
+              <Badge variant="outline" className="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+                Enterprise Evaluation
+              </Badge>
+            </div>
           </div>
           <div className="flex gap-2">
             {showWelcomeHints && (
@@ -726,7 +736,7 @@ export default function BulkImport() {
 
                   <ScrollArea className="h-96">
                     <div className="space-y-3">
-                      {currentSession.files.map((file) => (
+                      {currentSession.files.map((file, index) => (
                         <div key={file.id} className="p-3 rounded-lg border border-white/10 bg-white/5">
                           <div className="flex items-center justify-between mb-2">
                             <span className="font-medium">{file.file?.name || `File ${index + 1}`}</span>
