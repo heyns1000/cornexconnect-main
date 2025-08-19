@@ -65,7 +65,7 @@ export default function Header() {
             {/* Currency Display */}
             <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
               <span className="text-sm text-gray-600">Currency:</span>
-              <span className="font-medium text-emerald-600">{currentCountry.currency}</span>
+              <span className="font-medium text-emerald-600">ZAR</span>
             </div>
             
             {/* Refresh Button */}
@@ -93,7 +93,7 @@ export default function Header() {
                     ? `${user.firstName} ${user.lastName}` 
                     : user?.email || "User"}
                 </p>
-                <p className="text-xs text-gray-500">{user?.role || "Team Member"}</p>
+                <p className="text-xs text-gray-500">Team Member</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -109,11 +109,11 @@ export default function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/profile'}>
                     <User className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = '/company-settings'}>
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
