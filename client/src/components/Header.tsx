@@ -30,14 +30,14 @@ export default function Header() {
 
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-50 shadow-xl">
-      <div className="px-6 py-4">
+      <div className="px-3 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          {/* Logo & Brand */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 shadow-lg">
-              <span className="text-white font-bold text-xl">C</span>
+          {/* Logo & Brand - Mobile Optimized */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-600 shadow-lg">
+              <span className="text-white font-bold text-sm sm:text-xl">C</span>
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 CornexConnect
               </h1>
@@ -45,12 +45,17 @@ export default function Header() {
                 🍎 Powered by Fruitful Assist AI • Manufacturing Excellence
               </p>
             </div>
+            <div className="sm:hidden">
+              <h1 className="text-sm font-bold text-gray-900 dark:text-white">
+                CornexConnect
+              </h1>
+            </div>
           </div>
           
-          {/* Quick Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Country Selector - Instant Selection */}
-            <div className="flex items-center space-x-2">
+          {/* Quick Actions - Mobile Responsive */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Country Selector - Mobile Optimized */}
+            <div className="hidden sm:flex items-center space-x-2">
               <Button
                 variant="outline"
                 onClick={() => setShowCountrySelector(true)}
@@ -62,13 +67,30 @@ export default function Header() {
               </Button>
             </div>
             
-            {/* Currency Display */}
-            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
+            {/* Mobile Country Selector */}
+            <div className="sm:hidden">
+              <Button
+                variant="outline"
+                onClick={() => setShowCountrySelector(true)}
+                className="flex items-center space-x-1 px-2"
+                size="sm"
+              >
+                <span className="text-sm">{flag}</span>
+                <span className="text-xs font-medium">{currentCountry}</span>
+              </Button>
+            </div>
+            
+            {/* Currency Display - Mobile Responsive */}
+            <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-gray-50 rounded-lg">
               <span className="text-sm text-gray-600">Currency:</span>
               <span className="font-medium text-emerald-600">ZAR</span>
             </div>
             
-            {/* Refresh Button */}
+            <div className="sm:hidden flex items-center px-2 py-1 bg-gray-50 rounded">
+              <span className="text-xs font-medium text-emerald-600">ZAR</span>
+            </div>
+            
+            {/* Refresh Button - Mobile Responsive */}
             <Button 
               className="bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white shadow-lg"
               size="sm" 

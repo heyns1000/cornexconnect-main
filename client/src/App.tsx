@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -41,6 +41,7 @@ import { MoodFloatingButton } from "@/components/MoodFloatingButton";
 import { MoodProvider } from "@/hooks/useMoodContext";
 // Translation system is now self-contained in useTranslation hook
 import { useState } from "react";
+import { LayoutDashboard, Store, Upload, Map } from "lucide-react";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -109,13 +110,40 @@ function AuthenticatedApp() {
   const [chatbotOpen, setChatbotOpen] = useState(false);
 
   return (
-    <div className="flex h-screen animated-background cornex-pattern">
-      <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex min-h-screen animated-background cornex-pattern">
+      {/* Desktop Sidebar - hidden on mobile */}
+      <div className="hidden lg:block">
+        <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} />
+      </div>
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
         <Header />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 px-2 sm:px-4 lg:px-6 pb-20 lg:pb-6">
           <Router />
         </main>
+        
+        {/* Mobile Bottom Navigation */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-gray-200 px-2 py-2 z-40">
+          <div className="flex justify-around items-center">
+            <Link href="/" className="flex flex-col items-center py-1 px-2">
+              <LayoutDashboard className="w-5 h-5 text-gray-600" />
+              <span className="text-xs text-gray-600 mt-1">Dashboard</span>
+            </Link>
+            <Link href="/hardware-stores" className="flex flex-col items-center py-1 px-2">
+              <Store className="w-5 h-5 text-gray-600" />
+              <span className="text-xs text-gray-600 mt-1">Stores</span>
+            </Link>
+            <Link href="/bulk-import" className="flex flex-col items-center py-1 px-2">
+              <Upload className="w-5 h-5 text-gray-600" />
+              <span className="text-xs text-gray-600 mt-1">Import</span>
+            </Link>
+            <Link href="/store-map" className="flex flex-col items-center py-1 px-2">
+              <Map className="w-5 h-5 text-gray-600" />
+              <span className="text-xs text-gray-600 mt-1">Map</span>
+            </Link>
+          </div>
+        </div>
       </div>
       
       {/* AI-Powered Mood Selector */}

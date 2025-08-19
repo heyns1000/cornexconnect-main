@@ -216,33 +216,33 @@ export default function Dashboard() {
 
   return (
     <PageTransition>
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+        {/* Header - Mobile Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
               🏭 CornexConnect {t.dashboard}
             </h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Monitor your global manufacturing and distribution network
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 self-start sm:self-auto">
             {showWelcomeHints && (
               <Button 
                 variant="outline" 
                 onClick={startDashboardTour}
-                className="bg-gradient-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100"
+                className="bg-gradient-to-r from-emerald-50 to-blue-50 hover:from-emerald-100 hover:to-blue-100 text-xs sm:text-sm"
               >
-                <Lightbulb className="w-4 h-4 mr-2" />
-                Dashboard Tour
+                <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Dashboard </span>Tour
               </Button>
             )}
           </div>
         </div>
 
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-hint="dashboard-metrics">
+        {/* Key Metrics Cards - Mobile Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" data-hint="dashboard-metrics">
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{t.totalRevenue}</CardTitle>
@@ -304,8 +304,8 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Charts and Analytics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Charts and Analytics - Mobile Responsive */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {/* Regional Sales Performance */}
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20" data-hint="regional-chart">
             <CardHeader>
@@ -370,8 +370,8 @@ Top Performing Products
           </Card>
         </div>
 
-        {/* Production and Demand Forecast */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Production and Demand Forecast - Mobile Responsive */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {/* Production Schedule */}
           <Card className="backdrop-blur-sm bg-white/10 border border-white/20">
             <CardHeader>
@@ -450,13 +450,13 @@ Top Performing Products
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {/* Add Product Modal */}
               <Dialog open={addProductOpen} onOpenChange={setAddProductOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="h-20 flex flex-col gap-2 hover:bg-emerald-50 hover:border-emerald-200 transition-colors">
-                    <Package className="w-6 h-6 text-emerald-600" />
-                    <span className="text-sm font-medium">Add Product</span>
+                  <Button variant="outline" className="h-16 sm:h-20 flex flex-col gap-1 sm:gap-2 hover:bg-emerald-50 hover:border-emerald-200 transition-colors">
+                    <Package className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
+                    <span className="text-xs sm:text-sm font-medium">Add Product</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
