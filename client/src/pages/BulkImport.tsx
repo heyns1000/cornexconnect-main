@@ -88,22 +88,53 @@ export default function BulkImport() {
     },
     onSuccess: (data) => {
       console.log("Upload success:", data);
-      toast({
-        title: "Upload Successful!",
-        description: `Successfully processed ${data.totalFiles || importFiles.length} files. ${data.message || 'Import completed successfully.'}`,
-      });
       
-      // Start polling session status if we have a session ID
-      if (data.sessionId) {
-        startProgressPolling(data.sessionId);
+      if (data.success) {
+        // Immediately update all files to completed status
+        setImportFiles(prev => prev.map(file => ({
+          ...file,
+          status: "completed" as const,
+          progress: 100,
+          result: {
+            totalRows: data.results?.[0]?.totalRows || 0,
+            validRows: data.results?.[0]?.validRows || 0,
+            errors: [],
+            preview: data.results?.[0]?.preview || []
+          }
+        })));
+
+        // Set session as completed
+        setCurrentSession({
+          id: data.sessionId,
+          name: `Import Session - ${new Date().toLocaleDateString()}`,
+          totalFiles: importFiles.length,
+          processedFiles: importFiles.length,
+          status: "completed",
+          createdAt: new Date().toISOString(),
+          files: importFiles.map(file => ({
+            ...file,
+            status: "completed" as const,
+            progress: 100
+          }))
+        });
+
+        toast({
+          title: "Import Completed Successfully!",
+          description: `Successfully imported ${data.totalImported} stores from ${data.results?.length || 0} files`,
+        });
+
+        // Switch to progress tab to show results
+        setActiveTab("progress");
+        
+        // Clear the file queue after 3 seconds to keep interface clean
+        setTimeout(() => {
+          setImportFiles([]);
+        }, 3000);
       }
       
       // Update hardware stores data to reflect new imports
       queryClient.invalidateQueries({ queryKey: ["/api/bulk-import/history"] });
       queryClient.invalidateQueries({ queryKey: ["/api/hardware-stores"] });
-      
-      // Clear files from UI after successful upload
-      setImportFiles([]);
     },
     onError: (error) => {
       toast({
