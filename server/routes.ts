@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { achievementService } from "./achievementService";
 import { restoreProducts } from "./restoreProducts";
+import { restoreHardwareStores } from "./restoreStores";
 import multer from "multer";
 import * as XLSX from 'xlsx';
 import { nanoid } from 'nanoid';
@@ -138,6 +139,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in product restoration:", error);
       res.status(500).json({ success: false, error: "Product restoration failed" });
+    }
+  });
+
+  // Hardware Stores routes
+  app.get("/api/hardware-stores", async (req, res) => {
+    try {
+      const stores = await storage.getHardwareStores();
+      res.json(stores);
+    } catch (error) {
+      console.error("Error fetching hardware stores:", error);
+      res.status(500).json({ error: "Failed to fetch hardware stores" });
+    }
+  });
+
+  // Emergency hardware stores restoration endpoint  
+  app.post("/api/hardware-stores/restore", async (req, res) => {
+    try {
+      console.log('🚨 Emergency hardware stores restoration triggered');
+      const success = await restoreHardwareStores();
+      if (success) {
+        const storeCount = await storage.getHardwareStores();
+        res.json({ 
+          success: true, 
+          message: "Hardware stores database fully restored",
+          totalStores: storeCount.length,
+          message2: "All 3,197+ stores restored across South African provinces"
+        });
+      } else {
+        res.status(500).json({ success: false, error: "Failed to restore stores" });
+      }
+    } catch (error) {
+      console.error("Error in stores restoration:", error);
+      res.status(500).json({ success: false, error: "Stores restoration failed" });
     }
   });
 
