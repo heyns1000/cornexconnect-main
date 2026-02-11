@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cornex™ Global Manufacturing Platform | Premium EPS Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'cornex': {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                            800: '#3730A3',
+                            900: '#312E81'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-soft': 'pulseSoft 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulseSoft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-gray-900 antialiased">
+    <!-- @COMPONENT: GlobalHeader -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-cornex-500 to-cornex-700 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-cube text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">Cornex™</h1>
+                            <p class="text-xs text-gray-500">Global Manufacturing Platform</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#dashboard" class="text-cornex-600 hover:text-cornex-700 font-medium transition">Dashboard</a>
+                    <a href="#inventory" class="text-gray-600 hover:text-cornex-600 font-medium transition">Inventory</a>
+                    <a href="#analytics" class="text-gray-600 hover:text-cornex-600 font-medium transition">Analytics</a>
+                    <a href="#brands" class="text-gray-600 hover:text-cornex-600 font-medium transition">Brands</a>
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="search" placeholder="Search products..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cornex-500 focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-cornex-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700" data-mock="true">Global Admin</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: GlobalHeader -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- @COMPONENT: GlobalMetrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Global Revenue</p>
+                        <p class="text-2xl font-bold text-gray-900" data-mock="true">R 24.8M</p>
+                        <p class="text-sm text-green-600 flex items-center mt-1">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            <span data-mock="true">+12.3%</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Active SKUs</p>
+                        <p class="text-2xl font-bold text-gray-900" data-mock="true">247</p>
+                        <p class="text-sm text-blue-600 flex items-center mt-1">
+                            <i class="fas fa-plus mr-1"></i>
+                            <span data-mock="true">18 new</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-box text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Manufacturing Units</p>
+                        <p class="text-2xl font-bold text-gray-900" data-mock="true">185K</p>
+                        <p class="text-sm text-cornex-600 flex items-center mt-1">
+                            <i class="fas fa-industry mr-1"></i>
+                            <span data-mock="true">Monthly</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-cornex-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cogs text-cornex-600"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover-lift">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Global Partners</p>
+                        <p class="text-2xl font-bold text-gray-900" data-mock="true">2,847</p>
+                        <p class="text-sm text-purple-600 flex items-center mt-1">
+                            <i class="fas fa-globe mr-1"></i>
+                            <span data-mock="true">9 Countries</span>
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-handshake text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: GlobalMetrics -->
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- @COMPONENT: ProductCatalogManager -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-semibold text-gray-900">Product Catalog Management</h2>
+                                <p class="text-sm text-gray-600">EPS & BR Cornice Production Lines</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 text-xs font-medium bg-cornex-100 text-cornex-700 rounded-lg hover:bg-cornex-200 transition">
+                                    EPS Series
+                                </button>
+                                <button class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                                    BR Series
+                                </button>
+                                <button class="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                                    LED Ready
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <!-- @FUNCTIONALITY: Advanced product search and filtering system -->
+                        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                            <div class="flex-1">
+                                <input type="search" placeholder="Search by SKU, dimensions..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cornex-500 focus:border-transparent">
+                            </div>
+                            <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cornex-500 focus:border-transparent">
+                                <option>All Categories</option>
+                                <option>Premium EPS</option>
+                                <option>Budget BR</option>
+                                <option>LED Ready</option>
+                                <option>Bulkhead Trims</option>
+                            </select>
+                            <button class="px-4 py-2 bg-cornex-600 text-white rounded-lg hover:bg-cornex-700 transition">
+                                <i class="fas fa-plus mr-2"></i>Add Product
+                            </button>
+                        </div>
+
+                        <!-- Product Grid -->
+                        <div class="space-y-4">
+                            <!-- @MAP: products.map(product => ( -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-cornex-300 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-gray-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900" data-bind="product.name">COVE EPS</h3>
+                                            <p class="text-sm text-gray-600" data-bind="product.sku">SKU: EPS01</p>
+                                            <p class="text-xs text-gray-500" data-bind="product.dimensions">55 x 55 x 85mm</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Top Seller</span>
+                                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full" data-bind="product.stock">In Stock</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Pack: <span data-bind="product.packSize">5</span> | Box: <span data-bind="product.boxQty">24 packs</span></p>
+                                        <p class="text-sm text-gray-600">MOQ: <span data-bind="product.moq">5 boxes</span></p>
+                                        <p class="font-semibold text-cornex-600" data-bind="product.price">R 8.63</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-between items-center">
+                                    <div class="flex space-x-2">
+                                        <button class="text-xs text-cornex-600 hover:text-cornex-700">Edit</button>
+                                        <button class="text-xs text-gray-600 hover:text-gray-700">Duplicate</button>
+                                        <button class="text-xs text-red-600 hover:text-red-700">Archive</button>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Last updated: <span data-bind="product.lastUpdated">2 hours ago</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-cornex-300 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-gray-400 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">PERONI EPS</h3>
+                                            <p class="text-sm text-gray-600">SKU: EPS03</p>
+                                            <p class="text-xs text-gray-500">80 x 80 x 110mm</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Top Seller</span>
+                                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">In Stock</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Pack: 5 | Box: 18 packs</p>
+                                        <p class="text-sm text-gray-600">MOQ: 5 boxes</p>
+                                        <p class="font-semibold text-cornex-600">R 10.03</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-between items-center">
+                                    <div class="flex space-x-2">
+                                        <button class="text-xs text-cornex-600 hover:text-cornex-700">Edit</button>
+                                        <button class="text-xs text-gray-600 hover:text-gray-700">Duplicate</button>
+                                        <button class="text-xs text-red-600 hover:text-red-700">Archive</button>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Last updated: 4 hours ago
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-cornex-300 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">LED READY 001</h3>
+                                            <p class="text-sm text-gray-600">SKU: LED001</p>
+                                            <p class="text-xs text-gray-500">108 x 53 x 120mm</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">LED Ready</span>
+                                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">In Stock</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Pack: 5 | Box: 12 packs</p>
+                                        <p class="text-sm text-gray-600">MOQ: 3 boxes</p>
+                                        <p class="font-semibold text-cornex-600">R 18.50</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-between items-center">
+                                    <div class="flex space-x-2">
+                                        <button class="text-xs text-cornex-600 hover:text-cornex-700">Edit</button>
+                                        <button class="text-xs text-gray-600 hover:text-gray-700">Duplicate</button>
+                                        <button class="text-xs text-red-600 hover:text-red-700">Archive</button>
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        Last updated: 1 day ago
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+
+                        <div class="mt-6 flex items-center justify-between">
+                            <p class="text-sm text-gray-600">Showing <span data-mock="true">247</span> products</p>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">Previous</button>
+                                <button class="px-3 py-2 text-sm bg-cornex-600 text-white rounded-lg">1</button>
+                                <button class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">2</button>
+                                <button class="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: ProductCatalogManager -->
+
+            <!-- @COMPONENT: BrandPortfolio -->
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Cornex™ Brand Portfolio</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-cornex-300 transition">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-paint-brush text-yellow-600"></i>
+                                <h4 class="font-semibold text-gray-900">TrimStyle™</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Premium Cornice Design Systems</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">127 SKUs</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-cornex-300 transition">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-magic text-purple-600"></i>
+                                <h4 class="font-semibold text-gray-900">DesignAura™</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Virtual Interior Styling</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Launching</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">45 SKUs</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-cornex-300 transition">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-tools text-green-600"></i>
+                                <h4 class="font-semibold text-gray-900">CorniceCraft™</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Industrial EPS Production</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">89 SKUs</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-cornex-300 transition">
+                            <div class="flex items-center space-x-3 mb-2">
+                                <i class="fas fa-th text-pink-600"></i>
+                                <h4 class="font-semibold text-gray-900">CeilingTech™</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">Lightweight Ceiling Systems</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Active</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">73 SKUs</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-4 px-4 py-2 bg-cornex-600 text-white rounded-lg hover:bg-cornex-700 transition">
+                        <i class="fas fa-plus mr-2"></i>Launch New Brand
+                    </button>
+                </div>
+
+                <!-- Manufacturing Status -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Manufacturing Status</h3>
+                    
+                    <!-- A modern industrial manufacturing facility with robotic automation and LED lighting -->
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Modern manufacturing facility" class="w-full h-32 object-cover rounded-lg mb-4" />
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Production Capacity</span>
+                            <span class="text-sm font-medium text-gray-900" data-mock="true">185,000 units/month</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Current Utilization</span>
+                            <span class="text-sm font-medium text-green-600" data-mock="true">87%</span>
+                        </div>
+                        
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 87%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Quality Score</span>
+                            <span class="text-sm font-medium text-cornex-600" data-mock="true">99.2%</span>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Active Factories</span>
+                            <span class="text-sm font-medium text-gray-900" data-mock="true">7 facilities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: BrandPortfolio -->
+        </div>
+
+        <!-- @COMPONENT: AdvancedAnalyticsDashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Provincial Performance</h3>
+                    <select class="text-sm border border-gray-300 rounded-lg px-3 py-1">
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                        <option>Last year</option>
+                    </select>
+                </div>
+                
+                <div class="h-64">
+                    <canvas id="provincialChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Top Performing Products</h3>
+                
+                <div class="space-y-4">
+                    <!-- @MAP: topProducts.map(product => ( -->
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cube text-cornex-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900" data-bind="product.name">COVE EPS</h4>
+                                <p class="text-sm text-gray-600" data-bind="product.sku">EPS01</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-900" data-bind="product.revenue">R 2.4M</p>
+                            <p class="text-sm text-green-600" data-bind="product.growth">+15.3%</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cube text-cornex-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">PERONI EPS</h4>
+                                <p class="text-sm text-gray-600">EPS03</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-900">R 1.8M</p>
+                            <p class="text-sm text-green-600">+12.1%</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-lightbulb text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">LED READY 001</h4>
+                                <p class="text-sm text-gray-600">LED001</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-900">R 1.2M</p>
+                            <p class="text-sm text-green-600">+28.5%</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between py-3">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-cube text-cornex-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-900">ALINA EPS</h4>
+                                <p class="text-sm text-gray-600">EPS04</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-900">R 950K</p>
+                            <p class="text-sm text-green-600">+8.7%</p>
+                        </div>
+                    </div>
+                    <!-- @END_MAP )) -->
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: AdvancedAnalyticsDashboard -->
+
+        <!-- @COMPONENT: GlobalPricingEngine -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Global Pricing Engine</h2>
+                        <p class="text-sm text-gray-600">AI-powered dynamic pricing with market intelligence</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-sync-alt mr-2"></i>Sync Prices
+                        </button>
+                        <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Global business technology and analytics dashboard -->
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Global business technology dashboard" class="w-full h-48 object-cover rounded-lg mb-6" />
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Market Intelligence</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Market Position</span>
+                                <span class="text-sm font-medium text-green-600" data-mock="true">Leading (78%)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Competitor Analysis</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">15% below avg</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Demand Forecast</span>
+                                <span class="text-sm font-medium text-blue-600" data-mock="true">High Growth</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-4">Pricing Optimization</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Margin Protection</span>
+                                <span class="text-sm font-medium text-green-600" data-mock="true">25.8% avg</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Volume Discounts</span>
+                                <span class="text-sm font-medium text-cornex-600" data-mock="true">Active (47 tiers)</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm text-gray-600">Regional Variance</span>
+                                <span class="text-sm font-medium text-purple-600" data-mock="true">±12% optimized</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: GlobalPricingEngine -->
+
+        <!-- @COMPONENT: InventoryManagementSystem -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Advanced Inventory Management</h2>
+                        <p class="text-sm text-gray-600">Real-time stock levels across all manufacturing facilities</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse-soft"></div>
+                            <span class="text-sm text-gray-600">Live Updates</span>
+                        </div>
+                        <button class="px-4 py-2 bg-cornex-600 text-white rounded-lg hover:bg-cornex-700 transition">
+                            <i class="fas fa-warehouse mr-2"></i>Stock Alert
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <!-- Construction materials display warehouse -->
+                <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Construction materials warehouse display" class="w-full h-40 object-cover rounded-lg mb-6" />
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">Product</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">SKU</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">Current Stock</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">MOQ Status</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">Reorder Point</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- @MAP: inventory.map(item => ( -->
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-cornex-600 text-sm"></i>
+                                        </div>
+                                        <span class="font-medium text-gray-900" data-bind="item.name">COVE EPS</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600" data-bind="item.sku">EPS01</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-medium text-gray-900" data-bind="item.stock">2,847</span>
+                                    <span class="text-sm text-gray-600"> units</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full" data-bind="item.moqStatus">Above MOQ</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600" data-bind="item.reorderPoint">500 units</td>
+                                <td class="py-3 px-4">
+                                    <button class="text-cornex-600 hover:text-cornex-700 text-sm" data-event="click:handleReorder">Reorder</button>
+                                </td>
+                            </tr>
+
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-cornex-600 text-sm"></i>
+                                        </div>
+                                        <span class="font-medium text-gray-900">PERONI EPS</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">EPS03</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-medium text-gray-900">1,234</span>
+                                    <span class="text-sm text-gray-600"> units</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Above MOQ</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">400 units</td>
+                                <td class="py-3 px-4">
+                                    <button class="text-cornex-600 hover:text-cornex-700 text-sm">Reorder</button>
+                                </td>
+                            </tr>
+
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-lightbulb text-yellow-600 text-sm"></i>
+                                        </div>
+                                        <span class="font-medium text-gray-900">LED READY 001</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">LED001</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-medium text-orange-600">287</span>
+                                    <span class="text-sm text-gray-600"> units</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full">Low Stock</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">300 units</td>
+                                <td class="py-3 px-4">
+                                    <button class="text-orange-600 hover:text-orange-700 text-sm font-medium">Urgent Reorder</button>
+                                </td>
+                            </tr>
+
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-cornex-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-cornex-600 text-sm"></i>
+                                        </div>
+                                        <span class="font-medium text-gray-900">BR1 XPS</span>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">BR1</td>
+                                <td class="py-3 px-4">
+                                    <span class="font-medium text-gray-900">1,892</span>
+                                    <span class="text-sm text-gray-600"> units</span>
+                                </td>
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">Above MOQ</span>
+                                </td>
+                                <td class="py-3 px-4 text-gray-600">600 units</td>
+                                <td class="py-3 px-4">
+                                    <button class="text-cornex-600 hover:text-cornex-700 text-sm">Reorder</button>
+                                </td>
+                            </tr>
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: InventoryManagementSystem -->
+
+        <!-- @COMPONENT: GlobalFooter -->
+        <footer class="bg-gray-900 text-gray-300 rounded-xl p-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-cornex-500 to-cornex-700 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-cube text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Cornex™</h3>
+                    </div>
+                    <p class="text-sm text-gray-400">Global manufacturing platform for premium EPS solutions, powering construction projects worldwide.</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-3">Products</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-cornex-400 transition">EPS Cornice Series</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">BR Budget Range</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">LED Ready Systems</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">Custom Solutions</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-3">Brands</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-cornex-400 transition">TrimStyle™</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">DesignAura™</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">CorniceCraft™</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">CeilingTech™</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-white mb-3">Connect</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-cornex-400 transition">Partner Portal</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">Support Center</a></li>
+                        <li><a href="#" class="hover:text-cornex-400 transition">Global Network</a></li>
+                        <li><a href="mailto:global@cornex.co.za" class="hover:text-cornex-400 transition">global@cornex.co.za</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-400">© 2024 Cornex™ Global Manufacturing Platform. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-cornex-400 transition">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-cornex-400 transition">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-cornex-400 transition">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
+        <!-- @END_COMPONENT: GlobalFooter -->
+    </div>
+
+    <script>
+        // @FUNCTIONALITY: Initialize provincial performance chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('provincialChart').getContext('2d');
+            
+            const provincialData = {
+                labels: ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Limpopo', 'Mpumalanga', 'North West', 'Free State', 'Northern Cape'],
+                datasets: [{
+                    label: 'Revenue (R Million)',
+                    data: [8.5, 6.2, 4.8, 3.2, 2.1, 1.8, 1.5, 1.2, 0.9],
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(156, 163, 175, 0.8)'
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 8
+                }]
+            };
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: provincialData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R' + value + 'M';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // @FUNCTIONALITY: Animate metrics on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.hover-lift').forEach(el => {
+                observer.observe(el);
+            });
+
+            // @FUNCTIONALITY: Real-time stock level updates simulation
+            setInterval(() => {
+                const stockElements = document.querySelectorAll('[data-bind*="stock"]');
+                stockElements.forEach(el => {
+                    if (Math.random() > 0.95) { // 5% chance of update
+                        const currentValue = parseInt(el.textContent.replace(/[^\d]/g, ''));
+                        const variation = Math.floor(Math.random() * 20) - 10; // ±10 units
+                        el.textContent = (currentValue + variation).toLocaleString();
+                        el.classList.add('animate-pulse-soft');
+                        setTimeout(() => el.classList.remove('animate-pulse-soft'), 2000);
+                    }
+                });
+            }, 5000);
+
+            // @FUNCTIONALITY: Dynamic pricing updates
+            // TODO: Implement real-time pricing API integration
+            
+            // @FUNCTIONALITY: MOQ validation system
+            // TODO: Implement MOQ checking logic for bulk orders
+            
+            // @FUNCTIONALITY: Advanced search and filtering
+            // TODO: Implement Elasticsearch integration for product search
+        });
+    </script>
+</body>
+</html>
